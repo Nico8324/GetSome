@@ -54,6 +54,7 @@ struct WatchNowView: View {
             }
             .scrollClipDisabled()
             .navigationDestinationVideo(in: namespace)
+            .toolbarBackground(.hidden)
             #if os(visionOS)
             .overlay(alignment: .topLeading) {
                 ProfileButtonView()

@@ -8,10 +8,10 @@ An actor that manages the coordinated playback of a video with participants in a
 import Foundation
 import AVFoundation
 import SwiftData
-import GroupActivities
+@preconcurrency import GroupActivities
 
 /// An actor that manages the coordinated playback of a video with participants in a group session.
-actor WatchingCoordinator {
+@MainActor class WatchingCoordinator {
     private typealias WatchingSession = GroupSession<WatchingActivity>
     
     private weak var coordinator: AVPlayerPlaybackCoordinator?
@@ -41,7 +41,7 @@ actor WatchingCoordinator {
         self.modelContext = ModelContext(modelContainer)
         
         Task {
-            await observeSessions()
+            observeSessions()
         }
     }
     

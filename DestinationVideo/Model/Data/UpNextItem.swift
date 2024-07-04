@@ -12,7 +12,7 @@ import SwiftData
 @Model
 final class UpNextItem {
     @Attribute(.unique)
-    private let videoID: Int
+    private var videoID: Int
     
     @Relationship(deleteRule: .nullify)
     var video: Video?

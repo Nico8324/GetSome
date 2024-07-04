@@ -59,7 +59,7 @@ struct Constants {
         #elseif os(visionOS)
         0
         #else
-        80
+        90
         #endif
     }
     
@@ -121,9 +121,19 @@ struct Constants {
         #endif
     }
     
+    static var categoryTopPadding: Double {
+        #if os(macOS)
+        5
+        #else
+        0
+        #endif
+    }
+    
     static var stackImageWidth: Double {
         #if os(tvOS)
         400
+        #elseif os(macOS)
+        180
         #else
         250
         #endif

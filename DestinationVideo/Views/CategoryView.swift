@@ -67,6 +67,7 @@ struct CategoryView: View {
             }
             .scrollClipDisabled()
             .toolbarBackground(.hidden)
+            .padding(.top, Constants.categoryTopPadding)
             .onAppear {
                 do {
                     // Show videos in the category.

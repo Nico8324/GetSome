@@ -10,7 +10,6 @@ import SwiftUI
 /// A window that contains the video player for macOS.
 #if os(macOS)
 struct PlayerWindow: Scene {
-    @State private var hovering: Bool = false
     /// An object that controls the video playback behavior.
     var player: PlayerModel
 
@@ -35,12 +34,6 @@ struct PlayerWindow: Scene {
                 // Allow the content to extend up the the window's edge,
                 // past the safe area.
                 .ignoresSafeArea(edges: .top)
-                // Hide the window's toolbar when the pointer
-                // isn't moving within the window's bounds.
-                .toolbarVisibility(hovering ? .visible : .hidden, for: .windowToolbar)
-                .onHover { new in
-                    hovering = new
-                }
         }
         .defaultPosition(.center)
         .restorationBehavior(.disabled)
