@@ -198,7 +198,6 @@ enum Presentation {
     private func observeSharedVideo() {
         Task {
             for await _ in NotificationCenter.default.notifications(named: .liveVideoDidChange) {
-                let coordinator = coordinator
                 guard let liveVideoID = coordinator.liveVideoID,
                       liveVideoID != currentItem?.id
                 else { continue }
@@ -243,7 +242,6 @@ enum Presentation {
         case .fullWindow:
             Task {
                 // Attempt to SharePlay this video if a FaceTime call is active.
-                let coordinator = coordinator
                 await coordinator.coordinatePlaybackOfVideo(withID: video.id)
                 // After preparing for coordination, load the video into the player and present it.
                 replaceCurrentItem(with: video)

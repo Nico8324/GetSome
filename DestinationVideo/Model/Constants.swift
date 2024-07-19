@@ -59,7 +59,7 @@ struct Constants {
         #elseif os(visionOS)
         0
         #else
-        90
+        100
         #endif
     }
     
@@ -69,7 +69,7 @@ struct Constants {
         #elseif os(visionOS)
         100
         #else
-        80
+        90
         #endif
     }
     
