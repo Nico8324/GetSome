@@ -12,11 +12,13 @@ import Studio
 ///  The model that manages the environment.
 @MainActor @Observable class ImmersiveEnvironment {
 
-    /// A Boolean value that indicates whether the app is presenting an immersive space.
-    public var immersiveSpaceIsShown: Bool = false
+    enum ImmersiveSpaceState {
+        case closed
+        case inTransition
+        case open
+    }
 
-    /// A Boolean value that indicates whether to open an immersive space.
-    public var showImmersiveSpace: Bool = false
+    public var immersiveSpaceState = ImmersiveSpaceState.closed
 
     /// An object that handles the state of an environment opened in an immersive space.
     private var environmentStateHandler = EnvironmentStateHandler()
@@ -42,21 +44,18 @@ import Studio
 
     public private(set) var rootEntity: Entity?
 
-    public func loadEnvironment() {
-        Task {
-            do {
-                let entity = try await Entity(named: "AAA_MainScene", in: studioBundle)
-                environmentStateHandler.gatherEntities(from: entity)
-                setEnvironmentState(requestedEnvironmentState)
+    public func loadEnvironment() async -> Bool {
+        do {
+            let entity = try await Entity(named: "AAA_MainScene", in: studioBundle)
+            environmentStateHandler.gatherEntities(from: entity)
+            setEnvironmentState(requestedEnvironmentState)
 
-                showImmersiveSpace = true
-                rootEntity = entity
-            } catch {
-                logger.error("Failed to load Studio bundle: \(error.localizedDescription)")
+            rootEntity = entity
+            return true
+        } catch {
+            logger.error("Failed to load Studio bundle: \(error.localizedDescription)")
 
-                showImmersiveSpace = false
-                rootEntity = nil
-            }
+            return false
         }
     }
 

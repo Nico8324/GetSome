@@ -8,9 +8,10 @@ A group activity to watch a video with others.
 import GroupActivities
 import CoreTransferable
 import CoreGraphics
+import UniformTypeIdentifiers
 
 /// A group activity to watch a video with others.
-struct WatchingActivity: GroupActivity, Transferable {
+struct WatchingActivity: GroupActivity {
     let title: String
     let previewImageName: String
     let fallbackURL: URL?
@@ -33,3 +34,12 @@ struct WatchingActivity: GroupActivity, Transferable {
     }
 }
 
+extension WatchingActivity: Transferable {
+    static var transferRepresentation: some TransferRepresentation {
+        CodableRepresentation(for: WatchingActivity.self, contentType: .watchingActivity)
+    }
+}
+
+extension UTType {
+    static let watchingActivity = UTType(exportedAs: "com.example.apple-samplecode.DestinationVideo.WatchingActivity")
+}

@@ -5,6 +5,7 @@ Abstract:
 A view that presents an environment.
 */
 
+import Studio
 import SwiftUI
 import RealityKit
 
@@ -13,6 +14,7 @@ struct ImmersiveEnvironmentView: View {
     static let id: String = "ImmersiveEnvironmentView"
 
     @Environment(ImmersiveEnvironment.self) private var immersiveEnvironment
+    @Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
 
     var body: some View {
         RealityView { content in
@@ -21,9 +23,11 @@ struct ImmersiveEnvironmentView: View {
             }
         }
         .onDisappear {
-            immersiveEnvironment.immersiveSpaceIsShown = false
-            immersiveEnvironment.showImmersiveSpace = false
+            immersiveEnvironment.immersiveSpaceState = .closed
             immersiveEnvironment.clearEnvironment()
+        }
+        .onAppear {
+            immersiveEnvironment.immersiveSpaceState = .open
         }
         .transition(.opacity)
     }

@@ -111,7 +111,7 @@ struct DetailView: View {
         .onGeometryChange(for: CGSize.self) { proxy in
             return proxy.size
         } action: { size in
-            let heightPadding = (isCompact ? Constants.compactDetailSafeAreaHeight : Constants.detailSafeAreaHeight) + Constants.extendSafeAreaTV
+            let heightPadding = (isCompact ? Constants.compactDetailSafeAreaHeight : Constants.detailSafeAreaHeight)
             let widthPadding = Constants.extendSafeAreaTV
             viewSize = CGSize(width: size.width + widthPadding, height: size.height + heightPadding)
         }

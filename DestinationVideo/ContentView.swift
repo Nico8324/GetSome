@@ -31,7 +31,6 @@ struct ContentView: View {
                 DestinationTabs()
             }
         }
-        .immersionManager()
         #else
         DestinationTabs()
             .presentVideoPlayer()

@@ -64,10 +64,12 @@ struct DestinationVideo: App {
             ImmersiveEnvironmentView()
                 .environment(immersiveEnvironment)
                 .onAppear {
+                    immersiveEnvironment.immersiveSpaceState = .open
                     contentBrightness = immersiveEnvironment.contentBrightness
                     surroundingsEffect = immersiveEnvironment.surroundingsEffect
                 }
                 .onDisappear {
+                    immersiveEnvironment.immersiveSpaceState = .closed
                     contentBrightness = .automatic
                     surroundingsEffect = nil
                 }

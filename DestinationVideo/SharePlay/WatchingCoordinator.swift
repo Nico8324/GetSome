@@ -8,7 +8,7 @@ An actor that manages the coordinated playback of a video with participants in a
 import Foundation
 import AVFoundation
 import SwiftData
-import GroupActivities
+@preconcurrency import GroupActivities
 
 /// An actor that manages the coordinated playback of a video with participants in a group session.
 @MainActor class WatchingCoordinator {
