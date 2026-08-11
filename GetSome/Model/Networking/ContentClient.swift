@@ -95,6 +95,15 @@ actor ContentClient {
         let response = try await fetch(source.watchURL(forItem: video.itemID), from: source, intent: "details")
         var details = try source.details(inWatchPage: response, itemID: video.itemID)
 
+        // A watch page can publish a master playlist directly, in which case there's
+        // no second endpoint to call — expand it here too, so the quality setting and
+        // the reported height mean the same thing for those sites as for the rest.
+        // Left as `try?`: a manifest that won't load is worth falling back on, not
+        // worth failing the whole detail page for.
+        if let expanded = try? await expandingManifest(in: details.sources, from: source) {
+            details.sources = expanded
+        }
+
         // Some sites hand the watch page only a token rendition and serve the real
         // set from a second endpoint. Prefer that when it answers, since it's what
         // the site's own player uses.

@@ -41,6 +41,25 @@ swiftc -swift-version 6 -o test main.swift empty.swift \
 parser with no network and no app build. (`empty.swift` can be a comment — it just
 keeps `swiftc` out of single-file script mode.)
 
+> [!WARNING]
+> **Don't judge a site by `curl`.** Cloudflare and similar edges fingerprint the TLS
+> handshake, not just the user agent, so `curl` can get a `403` with
+> `cf-mitigated: challenge` on a site that serves `URLSession` a clean `200`. missav
+> does exactly this — it was written off as unreachable on `curl` evidence before a
+> ten-line `URLSession` probe showed the site had been answering all along.
+>
+> When `curl` is blocked, re-test with the stack the app actually uses before
+> concluding anything:
+>
+> ```swift
+> var request = URLRequest(url: url)
+> request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
+> URLSession.shared.dataTask(with: request) { data, response, _ in … }.resume()
+> ```
+>
+> This cuts the other way too: a site that serves `curl` happily may still refuse
+> the app. The only client whose verdict counts is `URLSession`.
+
 ## When a site breaks
 
 Expect this; the app depends on other people's markup. A break usually looks like

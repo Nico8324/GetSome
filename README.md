@@ -20,8 +20,20 @@ third-party sites.
 | Site | Feeds | Categories | Playback |
 | :--- | :--- | :--- | :--- |
 | **mat6tube** | popular · newest · explore · watching now · 3 charts | — *(publishes no index)* | progressive MP4 |
-| **Pornhub** | hot · newest · 3 charts | *not yet* | adaptive HLS |
 | **XVideos** | popular · newest · verified | ~2,000 tags | HLS · 250p–1080p |
+| **MissAV** | popular · newest · releases · uncensored · 2 subtitle feeds · 3 charts | 37 genres | HLS · 360p–1080p |
+| **Pornhub** | hot · newest · 3 charts | — | ⚠️ **currently unavailable** |
+
+> [!WARNING]
+> **Pornhub stopped serving this client.** Every browse route (`/video?o=…`,
+> `/categories`, search) answers `302 → /`, and watch pages return 200 with no
+> manifests. A full browser session with age cookies behaves identically, so this
+> is age assurance at the account level rather than markup drift — the outcome
+> [NOTICE.md](NOTICE.md) describes for a site that adopts real age verification.
+
+**MissAV publishes in 11 languages**, and the source follows the device rather than
+pinning English, so titles and genre names usually arrive already translated — see
+`MissAVSource.localePath`.
 
 Adding one is **a single file plus one line** in `ContentSources.all`. Nothing
 above that layer changes — the site picker, qualified feed names and per-source
@@ -44,15 +56,16 @@ flowchart TD
     end
     subgraph src [ContentSource protocol]
         D[Mat6TubeSource]
-        E[PornhubSource]
-        F[XVideosSource]
+        E[XVideosSource]
+        F[MissAVSource]
+        G[PornhubSource]
     end
 
     A --> B
     A --> T
     B --> C
     C --> L
-    C --> D & E & F
+    C --> D & E & F & G
 
     style src fill:#0d1117,stroke:#f05138,stroke-width:2px
     style C fill:#0d1117,stroke:#1f6feb,stroke-width:2px
@@ -177,7 +190,14 @@ only a 360p MP4 inline and returns the real set from an RPC its own player calls
 
 `ContentClient` then expands any master HLS playlist into one source per rendition,
 so every site ends up with comparable heights, the Maximum Quality setting means
-the same thing everywhere, and the app can report what it is playing.
+the same thing everywhere, and the app can report what it is playing. That expansion
+applies to a manifest found on the watch page just as much as to one fetched from a
+second endpoint — missav publishes its master directly, and gets the same treatment.
+
+Obfuscation is worth a second look before working around it. missav assembles its
+media URL inside a `p,a,c,k,e,d` script, but the identifier that URL needs also sits
+in plain text a few lines away, in the seek-thumbnail URLs. Reading it there is both
+simpler and steadier than unpacking anything.
 
 Media URLs are signed and short-lived, so a stream is resolved at the moment of
 playback rather than stored.

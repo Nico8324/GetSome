@@ -15,7 +15,8 @@ enum ContentSources {
     static let all: [any ContentSource] = [
         Mat6TubeSource(),
         PornhubSource(),
-        XVideosSource()
+        XVideosSource(),
+        MissAVSource()
     ]
 
     /// The user defaults key that holds the site a person chose to open with.
