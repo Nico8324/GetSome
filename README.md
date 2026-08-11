@@ -202,6 +202,13 @@ simpler and steadier than unpacking anything.
 Media URLs are signed and short-lived, so a stream is resolved at the moment of
 playback rather than stored.
 
+**The player is a separate client.** It fetches manifests and segments on its own
+networking stack, which sends none of the headers `request(for:)` sets — so a CDN
+that wants a referer answers 403 there while every app request succeeds. That fails
+late and misleadingly: the stream resolves, the URL is correct, and the video simply
+refuses to start. `playbackHeaders(for:)` reuses each source's own headers for media,
+and defaults to exactly what its pages send.
+
 </details>
 
 <details>

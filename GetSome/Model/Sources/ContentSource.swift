@@ -184,6 +184,14 @@ protocol ContentSource: Sendable {
 
     /// Chooses which resolution to play from the ones the source published.
     func preferredStream(from streams: [StreamSource]) -> StreamSource?
+
+    /// The headers to attach to media requests for this source.
+    ///
+    /// The player fetches manifests and segments on its own networking stack, which
+    /// sends none of what ``request(for:)`` sets. At least one media CDN answers 403
+    /// without a referer, so without these a stream resolves and then refuses to
+    /// play — see ``PlayerModel``.
+    func playbackHeaders(for url: URL) -> [String: String]
 }
 
 // MARK: - Defaults
@@ -229,6 +237,15 @@ extension ContentSource {
     func streams(in response: SourceResponse) throws -> [StreamSource] { [] }
 
     func categories(in response: SourceResponse) throws -> [Feed] { [] }
+
+    /// Sends media requests with the same identification a page request carries.
+    ///
+    /// A site that gates its pages usually gates its media the same way, so reusing
+    /// ``request(for:)`` keeps that knowledge in one place per source rather than
+    /// splitting it between browsing and playback.
+    func playbackHeaders(for url: URL) -> [String: String] {
+        request(for: url).allHTTPHeaderFields ?? [:]
+    }
 
     /// A Boolean value that indicates whether this source publishes categories.
     var hasCategories: Bool { categoriesURL() != nil }

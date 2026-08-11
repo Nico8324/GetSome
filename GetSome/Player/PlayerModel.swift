@@ -290,7 +290,7 @@ enum Presentation {
 
         guard !Task.isCancelled, currentItem?.id == video.id else { return }
 
-        let playerItem = AVPlayerItem(url: url)
+        let playerItem = AVPlayerItem(asset: Self.asset(at: url, from: video.sourceID))
         applyQualityCeiling(to: playerItem)
         #if !os(macOS)
         playerItem.externalMetadata = await createMetadataItems(for: video)
@@ -301,6 +301,24 @@ enum Presentation {
         if autoplay {
             player.play()
         }
+    }
+
+    /// Builds an asset that identifies itself the way its site expects.
+    ///
+    /// The player fetches manifests and segments itself, and that stack sends none of
+    /// the headers the app uses for pages. missav's media CDN answers 403 to a request
+    /// without a referer, which surfaces as a stream that resolves cleanly and then
+    /// fails the moment it's handed to the player — the manifest URL is fine, so it
+    /// reads as a broken video rather than a rejected request.
+    ///
+    /// `AVURLAssetHTTPHeaderFieldsKey` isn't part of the documented API. The supported
+    /// alternative is a resource-loader delegate, which for HLS means intercepting a
+    /// custom scheme and re-serving every playlist and segment by hand. This app has no
+    /// App Store path — see NOTICE.md — so the header key is the proportionate choice.
+    private static func asset(at url: URL, from sourceID: String) -> AVURLAsset {
+        let headers = ContentSources.source(with: sourceID)?.playbackHeaders(for: url) ?? [:]
+        guard !headers.isEmpty else { return AVURLAsset(url: url) }
+        return AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
     }
 
     /// Applies the person's Maximum Quality setting to an adaptive stream.
