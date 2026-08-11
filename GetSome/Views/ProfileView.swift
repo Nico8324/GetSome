@@ -1,0 +1,244 @@
+/*
+See the LICENSE.txt file for this sample’s licensing information.
+
+Abstract:
+The profile and settings screen.
+*/
+
+import SwiftUI
+import SwiftData
+
+/// The profile and settings screen.
+///
+/// The app has no accounts — everything a person builds up lives on their device —
+/// so this screen is a place to see that state and change how the app behaves.
+///
+/// Settings that pick one of several values collapse to a single row showing the
+/// current choice. Laid out flat, they filled the screen with radio buttons and
+/// pushed everything else below the fold.
+struct ProfileView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var context
+    @Environment(TranslationStore.self) private var translator
+
+    @Query(sort: \SavedVideo.createdAt, order: .reverse)
+    private var saved: [SavedVideo]
+
+    @AppStorage(ContentSources.primarySourceKey) private var primarySourceID = ContentSources.all[0].id
+    @AppStorage(PlaybackSettings.maximumQualityKey) private var maximumQuality = StreamQuality.auto.rawValue
+    @AppStorage("didConfirmAge") private var didConfirmAge = false
+
+    /// Whether this screen was presented on top of something, rather than as a tab.
+    var isModal = true
+
+    @State private var isConfirmingRemoveAll = false
+    @State private var didClearCache = false
+    @State private var requestCount = 0
+
+    var body: some View {
+        // @Bindable is the supported way to bind to an @Observable object held in
+        // the environment. A hand-rolled Binding that reaches for the environment
+        // in its setter runs after body has returned, where the value isn't valid.
+        @Bindable var store = translator
+
+        return List {
+            header
+
+            if ContentSources.hasMultipleSources {
+                Section {
+                    Picker("Default Site", selection: $primarySourceID) {
+                        ForEach(ContentSources.all, id: \.id) { source in
+                            Text(source.displayName).tag(source.id)
+                        }
+                    }
+                    .settingsPickerStyle()
+                } footer: {
+                    Text("The site Watch Now leads with. Every site stays available in Browse.")
+                }
+            }
+
+            Section {
+                Picker("Maximum Quality", selection: $maximumQuality) {
+                    ForEach(StreamQuality.allCases) { quality in
+                        Text(quality.name).tag(quality.rawValue)
+                    }
+                }
+                .settingsPickerStyle()
+            } header: {
+                Text("Playback")
+            } footer: {
+                Text("""
+                    Applies the next time a video starts, and sites don’t always offer every \
+                    resolution. Automatic uses up to \(StreamQuality.platformDefault)p on this device.
+                    """)
+            }
+
+            if translator.isSupported {
+                Section {
+                    Toggle("Translate to \(store.targetLanguageName)", isOn: $store.isEnabled)
+
+                    // The rest only matters once translation is on.
+                    if store.isEnabled {
+                        Toggle("Offer Downloads Automatically", isOn: $store.downloadsAutomatically)
+
+                        if !translator.missingLanguageNames.isEmpty {
+                            Button("Download \(translator.missingLanguageNames.formatted(.list(type: .and)))") {
+                                translator.downloadMissingLanguages()
+                            }
+                        }
+
+                        if translator.isTranslating {
+                            LabeledContent("Status") {
+                                HStack(spacing: Constants.genreVerticalPadding) {
+                                    ProgressView().controlSize(.small)
+                                    Text("Translating…")
+                                }
+                            }
+                        } else if let error = translator.lastError {
+                            LabeledContent("Status") {
+                                Text(error)
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                                    .multilineTextAlignment(.trailing)
+                            }
+                        }
+                    }
+                } header: {
+                    Text("Language")
+                } footer: {
+                    Text(store.isEnabled ? """
+                        Titles and keywords are translated on this device — nothing is sent \
+                        anywhere. Each language downloads once, and only you can approve it.
+                        """ : """
+                        Off, so titles and keywords stay in whatever language they were uploaded \
+                        in. Turning this on translates them on this device; each language it \
+                        meets has to be downloaded first, which takes up space.
+                        """)
+                }
+            }
+
+            Section {
+                LabeledContent("Saved Videos", value: saved.count.formatted())
+
+                Button("Remove All Saved", role: .destructive) {
+                    isConfirmingRemoveAll = true
+                }
+                .disabled(saved.isEmpty)
+
+                Button(didClearCache ? "Cached Pages Cleared" : "Clear Cached Pages") {
+                    Task {
+                        await ContentClient.shared.clearCache()
+                        didClearCache = true
+                    }
+                }
+                .disabled(didClearCache)
+
+                if translator.isSupported {
+                    Button("Clear Saved Translations") {
+                        translator.clearCache()
+                    }
+                    .disabled(translator.translations.isEmpty)
+                }
+            } header: {
+                Text("Storage")
+            } footer: {
+                Text("Cached pages hold recently resolved video streams and posters.")
+            }
+
+            Section {
+                Button("Lock the App", role: .destructive) {
+                    didConfirmAge = false
+                }
+            } header: {
+                Text("Privacy")
+            } footer: {
+                Text("Locking asks for age confirmation again before showing anything.")
+            }
+
+            Section {
+                NavigationLink {
+                    DiagnosticsView()
+                } label: {
+                    LabeledContent("Diagnostics", value: requestCount.formatted())
+                }
+            } footer: {
+                Text("A record of recent requests, for reporting a feed that stopped working.")
+            }
+
+            Section("About") {
+                LabeledContent("Version", value: Constants.appVersion)
+                ForEach(ContentSources.all, id: \.id) { source in
+                    Link(destination: source.homeURL) {
+                        LabeledContent(source.displayName, value: source.homeURL.host() ?? "")
+                    }
+                }
+            }
+        }
+        .navigationTitle("Profile")
+        .task {
+            requestCount = await RequestLog.shared.recent.count
+        }
+        #if !os(tvOS)
+        .toolbar {
+            if isModal {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+        #endif
+        .confirmationDialog(
+            "Remove all saved videos?",
+            isPresented: $isConfirmingRemoveAll,
+            titleVisibility: .visible
+        ) {
+            Button("Remove All", role: .destructive) {
+                for item in saved {
+                    context.delete(item)
+                }
+                try? context.save()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This clears \(saved.count) saved videos from this device. It can’t be undone.")
+        }
+    }
+
+    private var header: some View {
+        Section {
+            HStack(spacing: Constants.verticalTextSpacing) {
+                Image(systemName: "person.crop.circle.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: Constants.profileHeaderIconSize, height: Constants.profileHeaderIconSize)
+                    .foregroundStyle(.tint)
+
+                VStack(alignment: .leading) {
+                    Text("Guest")
+                        .font(.title3.bold())
+                    Text("No account. Everything stays on this device.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(.vertical, Constants.genreSpacing)
+        }
+    }
+}
+
+extension View {
+    /// Collapses a settings picker to one row showing the current value.
+    func settingsPickerStyle() -> some View {
+        #if os(macOS)
+        self.pickerStyle(.menu)
+        #else
+        self.pickerStyle(.navigationLink)
+        #endif
+    }
+}
+
+#Preview(traits: .previewData) {
+    NavigationStack {
+        ProfileView()
+    }
+}
