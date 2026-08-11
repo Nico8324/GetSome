@@ -1,37 +1,95 @@
 # GetSome
 
-GetSome is a multiplatform video-browsing app for iOS, iPadOS, macOS, tvOS, and visionOS. It browses several video sites through one interface — feeds, categories, and full-text search — and streams with the system player.
+**One video browser for several sites — feeds, categories and search, played by the system player.**
 
-**Sites it ships with**
+![Platforms](https://img.shields.io/badge/platforms-iOS%20·%20iPadOS%20·%20macOS%20·%20tvOS%20·%20visionOS-1f6feb)
+![Swift](https://img.shields.io/badge/Swift-6-f05138)
+![Deployment](https://img.shields.io/badge/deployment-26.0-1f6feb)
+![Licence](https://img.shields.io/badge/licence-Apple%20Sample%20Code-8957e5)
+
+A multiplatform SwiftUI app built on Apple's *Destination Video* sample. It keeps
+that project's shell — tab navigation, hero banner, card layouts, the
+`AVPlayerViewController` stack, Picture in Picture, SharePlay, and the visionOS
+immersive environment — and replaces its bundled catalog with live content from
+third-party sites.
+
+---
+
+## Sites
 
 | Site | Feeds | Categories | Playback |
-| --- | --- | --- | --- |
-| mat6tube | popular, newest, explore, watching now, 3 charts | — (publishes no index) | progressive MP4 |
-| Pornhub | hot, newest, 3 charts | not yet | adaptive HLS |
-| XVideos | popular, newest, verified | ~2,000 tags | HLS, 250p–1080p |
+| :--- | :--- | :--- | :--- |
+| **mat6tube** | popular · newest · explore · watching now · 3 charts | — *(publishes no index)* | progressive MP4 |
+| **Pornhub** | hot · newest · 3 charts | *not yet* | adaptive HLS |
+| **XVideos** | popular · newest · verified | ~2,000 tags | HLS · 250p–1080p |
 
-The app is built on Apple's *Destination Video* sample. It keeps that project's SwiftUI shell — tab navigation, hero banner, card layouts, `AVPlayerViewController` playback, Picture in Picture, SharePlay, and the visionOS immersive environment — and replaces its bundled sample catalog with live content.
+Adding one is **a single file plus one line** in `ContentSources.all`. Nothing
+above that layer changes — the site picker, qualified feed names and per-source
+attribution all appear on their own.
 
 ## Architecture
 
-The backend is built around one protocol, so the app can browse several sites at once.
+```mermaid
+flowchart TD
+    subgraph ui [Views]
+        A["WatchNow · Browse · Search<br/>Saved · Categories · Detail"]
+    end
+    subgraph state [State]
+        B["FeedStore<br/><i>paging, per-feed state</i>"]
+        T["TranslationStore<br/><i>on-device translation</i>"]
+    end
+    subgraph net [Networking]
+        C["ContentClient<br/><i>requests · caching · stream choice</i>"]
+        L["RequestLog<br/><i>diagnostics</i>"]
+    end
+    subgraph src [ContentSource protocol]
+        D[Mat6TubeSource]
+        E[PornhubSource]
+        F[XVideosSource]
+    end
 
-| Concern | Type |
-| --- | --- |
-| What a site must provide | `Model/Sources/ContentSource.swift` |
-| The list of sites the app ships with | `Model/Sources/ContentSources.swift` |
-| Shared helpers for sites that publish markup | `Model/Sources/HTMLScanner.swift` |
-| The per-site implementations | `Model/Sources/Mat6TubeSource.swift`, `PornhubSource.swift`, `XVideosSource.swift` |
-| Shared HLS playlist reading | `Model/Sources/HLSManifest.swift` |
-| Recent requests, for reporting a break | `Model/Networking/RequestLog.swift` |
-| Requests, caching, stream selection | `Model/Networking/ContentClient.swift` |
-| Feed paging and state for views | `Model/FeedStore.swift` |
+    A --> B
+    A --> T
+    B --> C
+    C --> L
+    C --> D & E & F
 
-`ContentClient` knows how to make a request and cache a result; it holds no knowledge of any particular site. Everything site-specific lives behind `ContentSource`.
+    style src fill:#0d1117,stroke:#f05138,stroke-width:2px
+    style C fill:#0d1117,stroke:#1f6feb,stroke-width:2px
+```
 
-### Adding a site
+`ContentClient` knows how to make a request and cache a result; it holds no
+knowledge of any particular site. Everything site-specific lives behind
+`ContentSource` — the highlighted layer is the only one that grows.
 
-Write one conformance and add it to `ContentSources.all`. Nothing above that layer changes. See [Docs/AddingASource.md](Docs/AddingASource.md) for the skeleton, the reconnaissance checklist, and the pitfalls.
+> **Adding a site?** Read **[Docs/AddingASource.md](Docs/AddingASource.md)** — the
+> skeleton, a six-question reconnaissance checklist, and the traps. The plumbing is
+> a template; the reconnaissance is the real work.
+
+## Repository layout
+
+```
+GetSome/
+├── Model/
+│   ├── Sources/          ContentSource, the registry, per-site implementations,
+│   │                     HTMLScanner and HLSManifest helpers
+│   ├── Networking/       ContentClient, RequestLog
+│   ├── Data/             Video, VideoID, SavedVideo
+│   ├── FeedStore         paging and per-feed state
+│   └── TranslationStore  on-device translation of site text
+├── Views/                screens and cards
+├── Player/               PlayerModel and the platform player wrappers
+└── SharePlay/            group watching
+```
+
+---
+
+## How it works
+
+<details>
+<summary><b>Adding a site</b> — one conformance, eight members</summary>
+
+<br>
 
 ```swift
 struct ExampleSource: ContentSource {
@@ -52,13 +110,17 @@ struct ExampleSource: ContentSource {
 }
 ```
 
-Defaults cover the rest: a browser-shaped `URLRequest`, resolution selection per platform, and which feed the Watch Now screen leads with. A source receives raw `Data`, so a JSON API is as easy to wrap as a page of markup — `HTMLScanner` is only there for the latter.
+Defaults cover the rest: a browser-shaped `URLRequest`, resolution selection per
+platform, and which feed the Watch Now screen leads with. A source receives raw
+`Data`, so a JSON API is as easy to wrap as a page of markup — `HTMLScanner` is
+only there for the latter.
 
-The interface adapts on its own: with several sources, Browse and Search grow a site picker, feed names get qualified with their site, and the detail screen names where a video came from.
+</details>
 
-### Video identity
+<details>
+<summary><b>Video identity</b> — a stored pair, never an encoded string</summary>
 
-A video is identified by a **pair** — the site it came from and that site's own identifier — modeled as `VideoID` (`Model/Data/VideoID.swift`), never as an encoded string:
+<br>
 
 ```swift
 struct VideoID: Hashable, Sendable, Codable {
@@ -67,75 +129,176 @@ struct VideoID: Hashable, Sendable, Codable {
 }
 ```
 
-Two sites can, and eventually will, use the same identifier for different videos, so neither half identifies a video alone. Keeping the halves separate means no separator character is load-bearing — a site whose ids contain `/`, `|`, or spaces can't break parsing — and `description` (`mat6tube/-13001002_456239834`) exists only for logs and for system interfaces that demand a string. Nothing parses it back.
+Two sites can, and eventually will, use the same identifier for different videos,
+so neither half identifies a video alone. Keeping the halves separate means no
+separator character is load-bearing — a site whose ids contain `/`, `|` or spaces
+can't break parsing. `description` (`mat6tube/-13001002_456239834`) exists only for
+logs and for system interfaces that demand a string; nothing parses it back.
 
-`SavedVideo` stores the two fields and enforces `#Unique<SavedVideo>([\.sourceID, \.itemID])`. Renaming a source becomes an update to one column rather than a string rewrite.
+`SavedVideo` stores the two fields and enforces
+`#Unique<SavedVideo>([\.sourceID, \.itemID])`, so renaming a source is a field
+update rather than a string rewrite.
 
-Three consequences worth knowing:
+Three consequences:
 
-- **Normalize ids at the source.** `normalizedItemID(_:)` collapses the variants a site hands out — trailing slashes, tracking queries, fragments — so one video can't be saved twice. Override it if your site needs more.
-- **Renames are survivable.** List an old identifier in `previousIDs` and the registry keeps resolving it, so nothing a person saved is stranded.
-- **Dropping a source doesn't corrupt anything.** `Video.source` is optional and `isAvailable` is false; such videos stay in the library, marked, with playback disabled.
+- **Normalize ids at the source.** `normalizedItemID(_:)` collapses the variants a
+  site hands out — trailing slashes, tracking queries, fragments — so one video
+  can't be saved twice.
+- **Renames are survivable.** List an old identifier in `previousIDs` and the
+  registry keeps resolving it.
+- **Dropping a source doesn't corrupt anything.** `Video.source` is optional and
+  `isAvailable` is false; such videos stay in the library, marked, unplayable.
 
-### Categories
+</details>
 
-A category is just a ``Feed`` discovered at runtime rather than declared in code, so the store, the feed screen, and paging treat it exactly like a built-in feed. A source opts in by overriding `categoriesURL()` and `categories(in:)`; one that publishes no index overrides nothing and the app simply offers none for it.
+<details>
+<summary><b>Categories</b> — feeds discovered at runtime</summary>
 
-Because a site can publish thousands, categories are excluded from sidebar tab generation — see `FeedGroup.navigableGroups`.
+<br>
 
-### Resolving playback
+A category is just a `Feed` discovered at runtime rather than declared in code, so
+the store, the feed screen and paging treat it exactly like a built-in feed. A
+source opts in by overriding `categoriesURL()` and `categories(in:)`; one that
+publishes no index overrides nothing and the app offers none for it.
 
-Most sites publish their media URL on the watch page. Some don't: xvideos serves only a 360p MP4 inline and returns the real set from an RPC its own player calls. `streamsURL(forItem:)` and `streams(in:)` cover that second request, and `ContentClient` expands any master HLS playlist into one source per rendition — so every site ends up with comparable heights, the Maximum Quality setting means the same thing everywhere, and the app can report what it is playing.
+Because a site can publish thousands, categories are excluded from sidebar tab
+generation — see `FeedGroup.navigableGroups`.
 
-## How mat6tube content is read
+</details>
 
-That site doesn't publish an API, so its source requests the same pages a browser requests and reads the metadata out of the markup. Listing pages yield a title, poster, duration, view count, and HD flag per video. A watch page yields playback sources, upload date, keywords, and related videos. The site signs its media URLs with a short expiration, so the app resolves a stream at the moment of playback rather than storing one.
+<details>
+<summary><b>Resolving playback</b> — second requests and manifest expansion</summary>
 
-Because this depends on the site's page structure, a redesign there breaks parsing — and `Mat6TubeSource` is the only file that needs fixing.
+<br>
 
-## Translation
+Most sites publish their media URL on the watch page. Some don't: xvideos serves
+only a 360p MP4 inline and returns the real set from an RPC its own player calls.
+`streamsURL(forItem:)` and `streams(in:)` cover that second request.
 
-Sites publish titles and keywords in whatever language a video was uploaded in. `Model/TranslationStore.swift` translates them into the device's language with Apple's Translation framework — on device, nothing sent anywhere.
+`ContentClient` then expands any master HLS playlist into one source per rendition,
+so every site ends up with comparable heights, the Maximum Quality setting means
+the same thing everywhere, and the app can report what it is playing.
 
-- Views call `translator.text(for:)`, which answers immediately with the original and queues a miss. The queue is `@ObservationIgnored`, so queueing from inside a view's body doesn't invalidate the view that's drawing.
-- Misses are grouped by detected language (`NLLanguageRecognizer`, weighted by a prior — without one it reads Russian titles as Kazakh with full confidence, and nothing ever matches an installed pair).
-- A batch builds its own `TranslationSession(installedSource:target:)` inside one `nonisolated` function. The session and its `Request` aren't `Sendable`, so both are created and consumed there; only strings come back.
-- Results land in one write per batch, so a page of cards redraws once rather than once per title, and persist to Application Support, capped.
+Media URLs are signed and short-lived, so a stream is resolved at the moment of
+playback rather than stored.
 
-### Why one `translationTask` remains
+</details>
 
-A directly built session reports `canRequestDownloads == false` and throws `notInstalled` for a language the device doesn't have — it can translate, but it can't ask for a download. Only a session vended by SwiftUI's `translationTask` can present the system download UI. So `ContentView` hosts exactly one such task, used for nothing but that prompt.
+<details>
+<summary><b>Reading a site</b> — how mat6tube is parsed</summary>
 
-Its closure is `@Sendable` so it doesn't inherit the view's main-actor isolation, which would make the non-`Sendable` session a "sending" error.
+<br>
 
-### Downloads
+That site publishes no API, so its source requests the same pages a browser
+requests and reads the metadata out of the markup. Listing pages yield a title,
+poster, duration, view count and HD flag per video. A watch page yields playback
+sources, upload date, keywords and related videos.
 
-A language must be downloaded before it can be translated, and only a person can approve that — the framework offers no way to fetch one silently, and no way to reach Apple's server-side translation (the path Safari uses). The app asks once per language, at the moment it first meets one, and remembers what it already asked about. The profile screen can re-ask.
+Because this depends on the site's page structure, a redesign there breaks
+parsing — and `Mat6TubeSource` is the only file that needs fixing.
 
-Translated: video titles, keywords on cards and detail pages, and keyword chips. A keyword chip still *searches* with the original word, since a site only knows its own vocabulary. The detail screen also offers the system translation popover (`translationPresentation`) for the full untrimmed title.
+</details>
 
-## Profile and settings
+<details>
+<summary><b>Translation</b> — on device, opt-in</summary>
 
-`Views/ProfileView.swift` is reached from the profile button — a toolbar item on iOS and macOS, the expanding hover button over Watch Now on visionOS, and a tab on tvOS, which has no navigation bar to hold a button. There are no accounts; the screen exists to show what the app has accumulated on the device and to change how it behaves:
+<br>
 
-- **Sites** — which source Watch Now leads with (`ContentSources.primarySourceKey`)
-- **Maximum Quality** — the resolution ceiling for stream selection (`Model/PlaybackSettings.swift`), read by `ContentSource.preferredStream(from:)`
-- **Storage** — saved-video count, remove all, clear the resolved-stream cache
-- **Content** — lock the app, which restores the age gate
-- **About** — version, and a link to each source's site
+Sites publish titles and keywords in whatever language a video was uploaded in.
+`TranslationStore` translates them into the device's language with Apple's
+Translation framework. Nothing leaves the device, and it is **off until asked for**,
+because each language costs a real download.
 
-Both preferences live in user defaults rather than an observable object, so `preferredStream(from:)` can consult them while running off the main actor.
+- Views call `translator.text(for:)`, which answers immediately with the original
+  and queues a miss. The queue is `@ObservationIgnored`, so queueing from inside a
+  view's body doesn't invalidate the view that's drawing.
+- Misses are grouped by detected language (`NLLanguageRecognizer`, weighted by a
+  prior — without one it reads Russian titles as Kazakh with full confidence, and
+  nothing ever matches an installed pair).
+- A batch builds its own `TranslationSession(installedSource:target:)` inside one
+  `nonisolated` function. The session and its `Request` aren't `Sendable`, so both
+  are created and consumed there; only strings come back.
+- Results land in one write per batch — a page of cards redraws once rather than
+  once per title — and persist to Application Support, capped.
 
-## Saved videos
+**Why one `translationTask` remains.** A directly built session reports
+`canRequestDownloads == false` and throws `notInstalled` for a language the device
+lacks: it can translate, but it can't ask for a download. Only a session vended by
+SwiftUI's `translationTask` can present the system download UI, so `ContentView`
+hosts exactly one, used for nothing else. Its closure is `@Sendable` so it doesn't
+inherit main-actor isolation, which would make the non-`Sendable` session a
+"sending" error.
 
-SwiftData stores the videos a person saves (`Model/Data/SavedVideo.swift`). Each saved item holds its own copy of the card metadata plus its source, so the Saved tab works without refetching a listing page.
+**Downloads.** A language must be downloaded before it can be translated, and only
+a person can approve that — there is no way to fetch one silently, and no way to
+reach Apple's server-side translation (the path Safari uses). The app asks once per
+language, at the moment it first meets one.
+
+Translated: titles, keywords on cards and detail pages, and keyword chips. A chip
+still *searches* with the original word, since a site only knows its own vocabulary.
+
+</details>
+
+<details>
+<summary><b>Profile, storage and diagnostics</b></summary>
+
+<br>
+
+`ProfileView` is reached from the profile button — a toolbar item on iOS and macOS,
+the expanding hover button over Watch Now on visionOS, and a tab on tvOS, which has
+no navigation bar to hold a button. There are no accounts.
+
+| Section | What it does |
+| :--- | :--- |
+| **Sites** | which source Watch Now leads with |
+| **Playback** | the resolution ceiling, read by `preferredStream(from:)` |
+| **Language** | translation on/off, downloads, status |
+| **Storage** | saved count, remove all, clear page and poster caches |
+| **Privacy** | lock the app, restoring the age gate |
+| **Diagnostics** | recent requests, and export the page a parser failed on |
+
+Saved videos live in SwiftData (`SavedVideo`), each holding its own copy of the
+card metadata plus its source, so the Saved tab works without refetching.
+
+**Diagnostics matter here** because a scraper rarely fails loudly — a site returns
+a healthy 200 and the parser recognises nothing. A first page that parses to zero
+throws `ContentError.noResults` rather than showing an empty feed, and the parsed
+count is the health signal:
+
+| | meaning |
+| :--- | :--- |
+| `HTTP 200 · 475 ko · 24 parsed` | healthy |
+| `HTTP 200 · 475 ko · 0 parsed` | markup drift |
+| `HTTP 403 · 0 parsed` | blocked, or missing a header |
+
+</details>
+
+---
 
 ## Requirements
 
-iOS 26, macOS 26, tvOS 26, or visionOS 26. The Translation framework is unavailable on tvOS and visionOS, so those two build without it and show site text as published.
+**iOS 26 · macOS 26 · tvOS 26 · visionOS 26.** Build all four before pushing shared
+code — see [CONTRIBUTING.md](CONTRIBUTING.md) for the loop and the platform traps.
 
-**Translation can only be tested on real hardware.** The Simulator refuses outright — "Translation is not supported on simulated devices" — so `LanguageAvailability` reports pairs as `supported` but never `installed`, no download prompt appears, and nothing translates. That's the Simulator, not the app. Any failure now surfaces in the profile screen's Language section rather than failing silently.
+> [!NOTE]
+> The Translation framework is unavailable on **tvOS and visionOS**, which build
+> without it and show site text as published.
 
-## Content
+> [!IMPORTANT]
+> **Translation can only be tested on real hardware.** The Simulator refuses
+> outright — *"Translation is not supported on simulated devices"* — so
+> `LanguageAvailability` reports pairs as `supported` but never `installed` and
+> nothing translates. Failures surface in Profile › Language rather than silently.
 
-The sites this app browses serve adult content. It shows an age confirmation on first launch and loads nothing until a person confirms. It has no App Store distribution path — build and run it on your own devices.
+## Content and provenance
+
+The sites this app browses serve **adult material**. It shows an age confirmation on
+first launch and loads nothing until confirmed. There is no App Store distribution
+path — build and run it on your own devices.
+
+The app stores no media and redistributes none: playback streams directly from each
+site using its own signed, short-lived URLs. Tokens are passed through unmodified,
+exactly as each site's own player uses them.
+
+See **[NOTICE.md](NOTICE.md)** for Apple's provenance, the licence that governs the
+inherited code, and the boundaries kept during development.
