@@ -65,12 +65,23 @@ struct Mat6TubeSource: ContentSource {
     func listingURL(for feed: Feed, page: Int) -> URL? {
         guard feed.sourceID == id else { return nil }
 
-        // "Watching now" has its own path. Every other listing is a range of /recent.
-        let path = feed.slug == "now" ? "now" : "recent"
+        // Two listings have their own paths; the rest are ranges of /recent.
+        //
+        // Popular needs the `/trending` segment — `/popular` alone is a 404 that
+        // still renders a listing, so it looks like it works until the ranking is
+        // compared. Leaving the range off /recent doesn't work either: the site
+        // ignores an unrecognized or absent range and serves the monthly chart, so
+        // Popular and Top This Month were the same 24 videos.
+        let path: String
+        switch feed.slug {
+        case "now": path = "now"
+        case "popular": path = "popular/trending"
+        default: path = "recent"
+        }
         var components = URLComponents(url: homeURL.appending(path: path), resolvingAgainstBaseURL: false)!
 
         var items = [URLQueryItem]()
-        if path == "recent" && feed.slug != "popular" {
+        if path == "recent" {
             items.append(URLQueryItem(name: "range", value: feed.slug))
         }
         if page > 1 {
