@@ -133,10 +133,33 @@ actor SourceAuthenticator {
     }
 
     /// Fetches a page that needs the signed-in session.
-    func page(at url: URL, from source: any AuthenticatingSource) async throws -> SourceResponse {
+    ///
+    /// A site whose session has lapsed doesn't fail — it serves the sign-in page,
+    /// with a 200 and a realistic size. Parsed for videos that's simply an empty
+    /// feed, which reads as "you have no subscriptions" rather than "you are not
+    /// signed in". So the result is checked, and one silent re-sign-in is attempted
+    /// before giving up.
+    func page(at url: URL, from source: any AuthenticatingSource) async throws -> (SourceResponse, Int?) {
         guard await restoreSession(for: source) else { throw CredentialError.rejected }
+
+        var (response, status) = try await fetchPage(at: url, from: source)
+        if !source.isSignedIn(in: response.text) {
+            // The cookies didn't carry. Sessions don't survive a relaunch, and this
+            // is the request that discovers it.
+            signedInSources.remove(source.id)
+            guard await restoreSession(for: source) else { throw CredentialError.rejected }
+            (response, status) = try await fetchPage(at: url, from: source)
+            guard source.isSignedIn(in: response.text) else { throw CredentialError.rejected }
+        }
+        return (response, status)
+    }
+
+    private func fetchPage(
+        at url: URL, from source: any AuthenticatingSource
+    ) async throws -> (SourceResponse, Int?) {
         let (data, response) = try await session.data(for: source.request(for: url))
-        return SourceResponse(url: response.url ?? url, data: data)
+        return (SourceResponse(url: response.url ?? url, data: data),
+                (response as? HTTPURLResponse)?.statusCode)
     }
 
     /// Forgets a site's session and its stored credential.

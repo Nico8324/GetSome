@@ -56,8 +56,21 @@ actor ContentClient {
         // the login cookies — and, just as deliberately, doesn't record anything to
         // RequestLog. See SourceAuthenticator.
         if source.requiresSignIn(feed), let account = source as? any AuthenticatingSource {
-            let response = try await SourceAuthenticator.shared.page(at: url, from: account)
-            return try source.videos(inListing: response)
+            let (response, status) = try await SourceAuthenticator.shared.page(at: url, from: account)
+            let videos = try source.videos(inListing: response)
+            // Recorded without its body, unlike every other request. An empty
+            // account feed is otherwise unreadable: a page that parses to nothing
+            // looks identical to an account with nothing in it, and the byte count
+            // is what separates them. The body itself is somebody's account page,
+            // and diagnostics reports are made to be sent to other people.
+            await RequestLog.shared.record(
+                RequestRecord(sourceID: source.id, intent: "\(feed.name) p\(page)", url: url,
+                              statusCode: status, byteCount: response.data.count,
+                              parsedCount: videos.count,
+                              failure: videos.isEmpty ? Self.shape(of: response.text) : nil,
+                              date: .now)
+            )
+            return videos
         }
 
         let response = try await fetch(url, from: source, intent: "\(feed.name) p\(page)")
@@ -238,6 +251,29 @@ actor ContentClient {
 
         lastResponse = (source.id, intent, url, status, data)
         return SourceResponse(url: finalURL, data: data)
+    }
+
+    /// Describes what a page is built from, without keeping any of it.
+    ///
+    /// An account page that parses to nothing can't be diagnosed from a byte count,
+    /// and its body is somebody's account — the one thing a shareable diagnostics
+    /// report shouldn't carry. Counting the markers a parser looks for says which
+    /// kind of page arrived (videos, playlists, channels) and nothing about whose.
+    private static func shape(of html: String) -> String {
+        let markers = [
+            ("video-blocks", "<div id=\"video_"),
+            ("eid", "data-eid="),
+            ("playlist-links", "href=\"/playlist"),
+            ("favourite-links", "href=\"/favorite"),
+            ("profile-links", "href=\"/profiles/"),
+            ("channel-links", "href=\"/channels/"),
+            ("thumb-blocks", "class=\"thumb")
+        ]
+        let found = markers
+            .map { ($0.0, html.components(separatedBy: $0.1).count - 1) }
+            .filter { $0.1 > 0 }
+            .map { "\($0.0)=\($0.1)" }
+        return found.isEmpty ? "no recognizable blocks" : "shape: " + found.joined(separator: " ")
     }
 
     /// Returns whether a site answered with its home page instead of the page asked for.
