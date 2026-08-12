@@ -329,11 +329,11 @@ actor ContentClient {
         case let dictionary as [String: Any]:
             return dictionary.keys.sorted().flatMap { key -> [String] in
                 let nested = Self.keys(of: dictionary[key] ?? "", depth: depth + 1)
-                return nested.isEmpty ? [key] : ["\(key){\(nested.prefix(12).joined(separator: ","))}"]
+                return nested.isEmpty ? [key] : ["\(key){\(nested.prefix(40).joined(separator: ","))}"]
             }
         case let array as [Any]:
             // One element is enough to learn the element type's shape.
-            return array.first.map { ["[\(Self.keys(of: $0, depth: depth + 1).prefix(14).joined(separator: ","))]"] } ?? ["[]"]
+            return array.first.map { ["[\(Self.keys(of: $0, depth: depth + 1).prefix(40).joined(separator: ","))]"] } ?? ["[]"]
         default:
             return []
         }

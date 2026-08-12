@@ -98,6 +98,23 @@ struct XVideosSource: ContentSource {
         guard feed.sourceID == id, feed.slug == "myplaylists" else {
             return listingURL(for: feed, page: page).map { request(for: $0) }
         }
+        // The account API, as the site's own module calls it. Both answers are JSON
+        // and both were read from a signed-in session rather than guessed:
+        //
+        //   POST /api/playlists/last-updated/<page>
+        //     data.lists[]  id, name, nb_videos, nb_tags, nb_more, cover[], tags[],
+        //                   playlist, pl_params, status, show_in_feed, rand_playlist,
+        //                   max_videos_reached, csrf{add,delete,move,moveto,remove,vote}
+        //     metadata      isLogged, nbLists, nbPerPage, page, max*Reached
+        //
+        //   POST /api/playlists/list/<id>/videos/<page>
+        //     data.videos[] eid, tf, d, i, u, h, hm, hp, c, ch, n, p, t, v, …
+        //     metadata      isLogged, nbMore, nbPerPage   (27 per page)
+        //
+        // The video fields are the same family as `var video_related` on a watch
+        // page, which ``related(inWatchPage:)`` already reads — so the videos parser
+        // is that one, not a new one.
+        //
         // Named `listing` rather than `request`: a local called `request` shadows
         // `request(for:)` and the initializer stops resolving.
         var listing = request(for: homeURL.appending(path: "api/playlists/last-updated/\(page - 1)"))
