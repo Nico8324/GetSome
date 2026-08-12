@@ -119,15 +119,39 @@ actor SourceAuthenticator {
     @discardableResult
     func restoreSession(for source: any AuthenticatingSource) async -> Bool {
         if signedInSources.contains(source.id) { return true }
+        // One sign-in at a time. Feeds load concurrently and each one asks for a
+        // session, so without this a single screen fires several simultaneous
+        // sign-ins at the same account — which the site refuses, leaving every feed
+        // to be answered as a signed-out client.
+        if let inFlight = restoreTasks[source.id] { return await inFlight.value }
         guard let credential = CredentialStore.credential(for: source.id) else { return false }
+
+        let task = Task { [weak self] () -> Bool in
+            guard let self else { return false }
+            return await self.performRestore(for: source, credential: credential)
+        }
+        restoreTasks[source.id] = task
+        let succeeded = await task.value
+        restoreTasks[source.id] = nil
+        return succeeded
+    }
+
+    /// Sign-ins currently in flight, so concurrent callers share one attempt.
+    private var restoreTasks = [String: Task<Bool, Never>]()
+
+    private func performRestore(for source: any AuthenticatingSource, credential: Credential) async -> Bool {
         do {
             try await signIn(to: source, username: credential.username, password: credential.password)
             return true
         } catch {
-            // Deliberately quiet about which part failed: a wrong password and an
-            // unreachable site look the same here, and neither is worth a log line
-            // that names the account.
-            logger.error("Couldn’t restore the \(source.displayName, privacy: .public) session.")
+            // The reason, not the account. Which of "refused", "couldn't tell" and
+            // "token missing" it was decides what to fix, and none of those names a
+            // person — the earlier version withheld all three and made a failing
+            // sign-in undiagnosable.
+            logger.error("""
+                Couldn’t restore the \(source.displayName, privacy: .public) session: \
+                \(String(describing: error), privacy: .public)
+                """)
             return false
         }
     }

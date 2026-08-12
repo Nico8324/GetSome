@@ -49,16 +49,26 @@ actor ContentClient {
     ///   - page: A one-based page number.
     func videos(for feed: Feed, page: Int = 1) async throws -> [Video] {
         let source = try source(of: feed)
-        guard let url = source.listingURL(for: feed, page: page) else {
+        // Asked of `listingRequest`, not `listingURL`: a feed that is a POST has no
+        // listing URL at all, and checking the URL first declared it unsupported
+        // before the request it does have was ever built.
+        guard let pageRequest = source.listingRequest(for: feed, page: page),
+              let url = pageRequest.url else {
             throw ContentError.unsupportedFeed(feed.name)
         }
         // A signed-in feed is fetched on the authenticator's session, which carries
         // the login cookies — and, just as deliberately, doesn't record anything to
         // RequestLog. See SourceAuthenticator.
         if source.requiresSignIn(feed), let account = source as? any AuthenticatingSource {
-            let pageRequest = source.listingRequest(for: feed, page: page) ?? source.request(for: url)
             let (response, status) = try await SourceAuthenticator.shared.page(for: pageRequest, from: account)
             let videos = try source.videos(inListing: response)
+            if videos.isEmpty {
+                // Also to the system log, marked public so it survives redaction.
+                // Reading a diagnostics screen through screenshots is slower and
+                // less reliable than reading the log, and this line is the schema,
+                // not the contents — see `shape(of:)`.
+                logger.error("account feed \(feed.slug, privacy: .public): \(Self.shape(of: response.text), privacy: .public)")
+            }
             // Recorded without its body, unlike every other request. An empty
             // account feed is otherwise unreadable: a page that parses to nothing
             // looks identical to an account with nothing in it, and the byte count
@@ -272,7 +282,16 @@ actor ContentClient {
         // the key names are the site's schema, and the schema is what's missing.
         if let data = html.data(using: .utf8),
            let object = try? JSONSerialization.jsonObject(with: data) {
-            return "json " + Self.keys(of: object, depth: 0).joined(separator: " ")
+            var described = "json " + Self.keys(of: object, depth: 0).joined(separator: " ")
+            // `metadata` is counters and flags — isLogged, nbLists, page — with no
+            // account content in it, and its values are exactly what distinguishes
+            // "not signed in" from "nothing to list". Everything else stays keys only.
+            if let root = object as? [String: Any],
+               let metadata = root["metadata"] as? [String: Any] {
+                let values = metadata.keys.sorted().map { "\($0)=\(metadata[$0] ?? "")" }
+                described += " · metadata: " + values.joined(separator: " ")
+            }
+            return described
         }
         let markers = [
             ("video-blocks", "<div id=\"video_"),
@@ -302,7 +321,10 @@ actor ContentClient {
 
     /// Names the keys of a JSON answer, and nothing else it contains.
     private static func keys(of object: Any, depth: Int) -> [String] {
-        guard depth < 3 else { return [] }
+        // Five, not three: the interesting object is usually root → data → collection
+        // → element → its fields, and a limit of three rendered that element as "[]",
+        // which reads identically to an empty collection.
+        guard depth < 5 else { return [] }
         switch object {
         case let dictionary as [String: Any]:
             return dictionary.keys.sorted().flatMap { key -> [String] in
