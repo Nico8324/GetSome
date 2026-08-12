@@ -65,8 +65,17 @@ struct XVideosSource: ContentSource {
             // Zero-based, unlike /new.
             return homeURL.appending(path: "verified/videos/\(page - 1)")
         case "playlists":
-            // /account/favorites redirects here: on this site favourites *are*
-            // playlists, so one feed covers both.
+            // The whole account area renders itself in JavaScript — the index and an
+            // individual playlist page are both a ~50 ko shell with nothing in them —
+            // so there is no page to parse. The site's own account module fetches
+            // JSON instead, and this feed will move to that:
+            //
+            //   POST /api/playlists/last-updated/<page>      the playlists
+            //   POST /api/playlists/list/<id>/videos/<page>  videos within one
+            //
+            // Both need a POST, which ``listingURL(for:page:)`` can't express, so the
+            // move waits on the protocol gaining a request body. Until then this
+            // reports itself unreadable rather than pretending to be empty.
             return page == 1 ? homeURL.appending(path: "account/playlists") : nil
         case "subscriptions":
             return page == 1 ? homeURL.appending(path: "account/subscriptions") : nil
