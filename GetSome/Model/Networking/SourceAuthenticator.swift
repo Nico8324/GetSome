@@ -132,7 +132,11 @@ actor SourceAuthenticator {
         if let inFlight = restoreTasks[source.id] { return await inFlight.value }
         guard let credential = CredentialStore.credential(for: source.id) else { return false }
 
-        let task = Task { [weak self] () -> Bool in
+        // Detached on purpose. A plain `Task {}` here inherits this actor's
+        // isolation, so the task that `restoreSession` then awaits needs the very
+        // actor its awaiter is sitting in — and the sign-in never starts. Detaching
+        // lets it hop in on its own.
+        let task = Task.detached { [weak self] () -> Bool in
             guard let self else { return false }
             return await self.performRestore(for: source, credential: credential)
         }
