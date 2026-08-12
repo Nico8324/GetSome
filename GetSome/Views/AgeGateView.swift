@@ -28,7 +28,9 @@ struct AgeGateView: View {
             Text("GetSome")
                 .font(.largeTitle.bold())
 
-            Text("This app shows adult content from mat6tube.com.")
+            // Named from the registry rather than written into the string: this
+            // said "mat6tube.com" long after three more sites were added.
+            Text("This app shows adult content from \(ContentSources.displayNameList).")
                 .font(.headline)
 
             Text("""

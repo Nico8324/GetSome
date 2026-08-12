@@ -37,6 +37,14 @@ enum ContentSources {
     /// A Boolean value that indicates whether the interface needs to name its sources.
     static var hasMultipleSources: Bool { all.count > 1 }
 
+    /// The sites the app browses, named for the age gate.
+    ///
+    /// Built from the registry so adding a source can't leave the gate naming an
+    /// out-of-date list — it claimed a single site well after there were four.
+    static var displayNameList: String {
+        all.map(\.displayName).formatted(.list(type: .and))
+    }
+
     /// Returns the source with the specified identifier.
     ///
     /// This also resolves identifiers a source used to go by, so a rename doesn't
