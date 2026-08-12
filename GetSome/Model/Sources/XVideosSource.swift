@@ -64,60 +64,40 @@ struct XVideosSource: ContentSource {
         case "verified":
             // Zero-based, unlike /new.
             return homeURL.appending(path: "verified/videos/\(page - 1)")
-        case "playlists":
-            // The whole account area renders itself in JavaScript — the index and an
-            // individual playlist page are both a ~50 ko shell with nothing in them —
-            // so there is no page to parse. The site's own account module fetches
-            // JSON instead, and this feed will move to that:
-            //
-            //   POST /api/playlists/last-updated/<page>      the playlists
-            //   POST /api/playlists/list/<id>/videos/<page>  videos within one
-            //
-            // Both need a POST, which ``listingURL(for:page:)`` can't express, so the
-            // move waits on the protocol gaining a request body. Until then this
-            // reports itself unreadable rather than pretending to be empty.
-            return page == 1 ? homeURL.appending(path: "account/playlists") : nil
-        case "subscriptions":
-            return page == 1 ? homeURL.appending(path: "account/subscriptions") : nil
         default:
             return nil
         }
     }
 
-    /// The feeds that only exist for a signed-in person.
+    /// A person's own playlists are the only feeds that need a session.
     func requiresSignIn(_ feed: Feed) -> Bool {
-        feed.sourceID == id && ["playlists", "subscriptions", "myplaylists"].contains(feed.slug)
+        playlistID(for: feed) != nil
     }
 
-    /// Posts to the account API for the feeds that have no page behind them.
+    /// Posts to the account API for a playlist, which has no page behind it.
     ///
     /// The account area is rendered in JavaScript, so its listings aren't documents —
     /// they're these calls, which the site's own account module makes. They answer
-    /// JSON and only to POST.
+    /// JSON and only to POST. Both schemas were read from a signed-in session rather
+    /// than guessed:
+    ///
+    ///   POST /api/playlists/last-updated/<page>      — see `playlistIndexRequest`
+    ///     data.lists[]  id, name, nb_videos, nb_tags, cover[], tags[], csrf{…}
+    ///     metadata      isLogged, nbLists, nbPerPage, page
+    ///
+    ///   POST /api/playlists/list/<id>/videos/<page>
+    ///     data.videos[] eid, tf, d, i, u, h, hm, hp, c, ch, n, p, t, v, …
+    ///     metadata      isLogged, nbMore, nbPerPage   (27 per page)
+    ///
+    /// Those video fields are the same family as `var video_related` on a watch page,
+    /// so ``videos(inEntries:)`` reads both.
     func listingRequest(for feed: Feed, page: Int) -> URLRequest? {
-        guard feed.sourceID == id, feed.slug == "myplaylists" else {
+        guard let playlist = playlistID(for: feed) else {
             return listingURL(for: feed, page: page).map { request(for: $0) }
         }
-        // The account API, as the site's own module calls it. Both answers are JSON
-        // and both were read from a signed-in session rather than guessed:
-        //
-        //   POST /api/playlists/last-updated/<page>
-        //     data.lists[]  id, name, nb_videos, nb_tags, nb_more, cover[], tags[],
-        //                   playlist, pl_params, status, show_in_feed, rand_playlist,
-        //                   max_videos_reached, csrf{add,delete,move,moveto,remove,vote}
-        //     metadata      isLogged, nbLists, nbPerPage, page, max*Reached
-        //
-        //   POST /api/playlists/list/<id>/videos/<page>
-        //     data.videos[] eid, tf, d, i, u, h, hm, hp, c, ch, n, p, t, v, …
-        //     metadata      isLogged, nbMore, nbPerPage   (27 per page)
-        //
-        // The video fields are the same family as `var video_related` on a watch
-        // page, which ``related(inWatchPage:)`` already reads — so the videos parser
-        // is that one, not a new one.
-        //
         // Named `listing` rather than `request`: a local called `request` shadows
         // `request(for:)` and the initializer stops resolving.
-        var listing = request(for: homeURL.appending(path: "api/playlists/last-updated/\(page - 1)"))
+        var listing = request(for: homeURL.appending(path: "api/playlists/list/\(playlist)/videos/\(page - 1)"))
         listing.httpMethod = "POST"
         listing.setValue("XMLHttpRequest", forHTTPHeaderField: "X-Requested-With")
         listing.setValue("application/json, text/javascript", forHTTPHeaderField: "Accept")
@@ -179,10 +159,35 @@ struct XVideosSource: ContentSource {
     // MARK: - Parsing
 
     func videos(inListing response: SourceResponse) throws -> [Video] {
+        // The account API answers JSON; every page answers markup.
+        if let root = try? JSONSerialization.jsonObject(with: response.data) as? [String: Any] {
+            let data = root["data"] as? [String: Any]
+            guard let entries = data?["videos"] as? [[String: Any]] else { return [] }
+            return videos(inEntries: entries)
+        }
+
         let html = response.text
         let blocks = html.components(separatedBy: "<div id=\"video_").dropFirst()
         var seen = Set<String>()
         return blocks.compactMap(video(inBlock:)).filter { seen.insert($0.itemID).inserted }
+    }
+
+    /// Reads the playlists out of the account API's index answer.
+    func playlists(in response: SourceResponse) -> [AccountPlaylist] {
+        guard let root = try? JSONSerialization.jsonObject(with: response.data) as? [String: Any],
+              let data = root["data"] as? [String: Any],
+              let lists = data["lists"] as? [[String: Any]] else { return [] }
+
+        return lists.compactMap { list in
+            // `id` arrives as a number in some answers and a string in others.
+            let identifier = (list["id"] as? String) ?? (list["id"] as? Int).map(String.init)
+            guard let identifier, !identifier.isEmpty else { return nil }
+            return AccountPlaylist(
+                id: identifier,
+                name: HTMLScanner.decode((list["name"] as? String) ?? identifier),
+                videoCount: (list["nb_videos"] as? Int) ?? Int((list["nb_videos"] as? String) ?? "") ?? 0
+            )
+        }
     }
 
     private func video(inBlock block: String) -> Video? {
@@ -236,7 +241,16 @@ struct XVideosSource: ContentSource {
             return []
         }
 
-        return entries.compactMap { entry in
+        return videos(inEntries: entries)
+    }
+
+    /// Turns the site's JSON video objects into videos.
+    ///
+    /// Shared deliberately: the account API's `data.videos` and the watch page's
+    /// `var video_related` are the same objects with the same field names, so they
+    /// get the same parser rather than two that can drift apart.
+    private func videos(inEntries entries: [[String: Any]]) -> [Video] {
+        entries.compactMap { entry in
             guard let key = entry["eid"] as? String, !key.isEmpty else { return nil }
             let title = (entry["tf"] as? String) ?? (entry["t"] as? String) ?? ""
             // `h`, `hm` and `hp` are the site's high-definition markers.
@@ -399,28 +413,48 @@ extension XVideosSource: AuthenticatingSource {
 }
 
 extension XVideosSource {
+    /// The prefix that marks a feed as one of the account's playlists.
+    static let playlistFeedPrefix = "pl:"
+
     /// The feeds that belong to a signed-in account.
     ///
-    /// Empty until a credential is stored, so signing out removes them rather than
-    /// leaving rows that lead to a login page.
+    /// One per playlist, rather than a single "Favorites" that would have to guess
+    /// which playlist was meant — on this site /account/favorites redirects to the
+    /// playlists index, so a favorite *is* a playlist.
+    ///
+    /// Empty until a credential is stored and the playlists have been fetched once.
+    /// Subscriptions isn't here: the account bundle exposes no API for it, so a feed
+    /// would only ever fail.
     var accountFeeds: [Feed] {
         guard CredentialStore.hasCredential(for: id) else { return [] }
-        return [
-            makeFeed("subscriptions",
-                     name: String(localized: "Subscriptions", comment: "Collection name"),
-                     description: String(localized: "New videos from the accounts you follow.",
-                                         comment: "The description of a collection of videos."),
-                     icon: "person.2"),
-            makeFeed("playlists",
-                     name: String(localized: "Favorites", comment: "Collection name"),
-                     description: String(localized: "The playlists you keep on this site.",
-                                         comment: "The description of a collection of videos."),
-                     icon: "heart.text.square"),
-            makeFeed("myplaylists",
-                     name: String(localized: "Playlists", comment: "Collection name"),
-                     description: String(localized: "The playlists you keep on this site.",
-                                         comment: "The description of a collection of videos."),
-                     icon: "list.and.film")
-        ]
+        return AccountPlaylistStore.playlists(for: id).map { playlist in
+            makeFeed(
+                Self.playlistFeedPrefix + playlist.id,
+                name: playlist.name,
+                description: playlist.videoCount > 0
+                    ? String(localized: "\(playlist.videoCount.formatted()) videos",
+                             comment: "A category's video count")
+                    : "",
+                icon: "heart.text.square"
+            )
+        }
+    }
+
+    /// The playlist identifier a feed refers to, if it refers to one.
+    func playlistID(for feed: Feed) -> String? {
+        guard feed.sourceID == id, feed.slug.hasPrefix(Self.playlistFeedPrefix) else { return nil }
+        return String(feed.slug.dropFirst(Self.playlistFeedPrefix.count))
+    }
+
+    /// The request that lists a person's playlists.
+    ///
+    /// Not a feed: it answers playlists rather than videos, so it feeds
+    /// ``accountFeeds`` instead of a screen. See ``ContentClient/refreshPlaylists(for:)``.
+    var playlistIndexRequest: URLRequest {
+        var listing = request(for: homeURL.appending(path: "api/playlists/last-updated/0"))
+        listing.httpMethod = "POST"
+        listing.setValue("XMLHttpRequest", forHTTPHeaderField: "X-Requested-With")
+        listing.setValue("application/json, text/javascript", forHTTPHeaderField: "Accept")
+        return listing
     }
 }

@@ -114,6 +114,35 @@ actor ContentClient {
         return videos
     }
 
+    /// Refreshes the playlists a signed-in person keeps, so they can be feeds.
+    ///
+    /// Separate from ``videos(for:page:)`` because the answer is playlists, not
+    /// videos: it feeds the picker rather than a screen. Silent on failure — a
+    /// person who isn't signed in simply has none, which isn't an error worth
+    /// surfacing anywhere.
+    @discardableResult
+    func refreshPlaylists(for sourceID: String) async -> [AccountPlaylist] {
+        guard let source = ContentSources.source(with: sourceID) as? XVideosSource,
+              CredentialStore.hasCredential(for: source.id) else { return [] }
+        do {
+            let (response, _) = try await SourceAuthenticator.shared.page(
+                for: source.playlistIndexRequest, from: source
+            )
+            let playlists = source.playlists(in: response)
+            // Only replace what's remembered when the site actually answered with
+            // something. A refused session answers an empty list, and letting that
+            // overwrite the cache would make the feeds vanish on a blip.
+            if !playlists.isEmpty {
+                AccountPlaylistStore.setPlaylists(playlists, for: source.id)
+            }
+            logger.debug("\(source.displayName, privacy: .public): \(playlists.count) playlist(s)")
+            return playlists
+        } catch {
+            logger.error("Couldn’t list playlists: \(String(describing: error), privacy: .public)")
+            return []
+        }
+    }
+
     /// Loads the categories a source publishes.
     ///
     /// Returns an empty list for a source without a category index rather than

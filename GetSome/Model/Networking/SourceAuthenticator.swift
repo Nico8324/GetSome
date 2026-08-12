@@ -71,6 +71,12 @@ actor SourceAuthenticator {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.httpCookieAcceptPolicy = .always
         configuration.httpShouldSetCookies = true
+        // Without this a stalled sign-in never returns: the site can accept the
+        // connection and simply hold it, and every feed waiting on the session waits
+        // with it, forever and silently. A refused sign-in is recoverable; a hung one
+        // isn't visible at all.
+        configuration.timeoutIntervalForRequest = 20
+        configuration.timeoutIntervalForResource = 40
         return URLSession(configuration: configuration)
     }()
 

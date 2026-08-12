@@ -29,7 +29,21 @@ struct ContentView: View {
         }
         // The player records watch history, but it's created before the model
         // container exists, so it's handed the context once there is one.
-        .task { player.historyContext = context }
+        .task {
+            player.historyContext = context
+            // Playlists are feeds, and feeds are read synchronously — so the list is
+            // refreshed here, in the background, rather than when the picker draws.
+            //
+            // In an unstructured Task on purpose: this `.task` belongs to a Group
+            // whose content swaps when the age gate clears, and the refresh was being
+            // cancelled mid-request every launch — silently, since a cancelled await
+            // never reaches the catch that would have reported it.
+            Task {
+                for source in ContentSources.all where CredentialStore.hasCredential(for: source.id) {
+                    await ContentClient.shared.refreshPlaylists(for: source.id)
+                }
+            }
+        }
     }
 
     @ViewBuilder

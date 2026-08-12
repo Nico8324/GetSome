@@ -60,6 +60,9 @@ struct ProfileView: View {
                 try await SourceAuthenticator.shared.signIn(to: account, username: username, password: secret)
                 isSignedIn = true
                 signedInAs = username
+                // The playlists become feeds, so fetch them before the picker is
+                // next drawn rather than leaving the account looking empty.
+                await ContentClient.shared.refreshPlaylists(for: account.id)
             } catch {
                 signInError = error.localizedDescription
             }
@@ -184,6 +187,7 @@ struct ProfileView: View {
                         Button("Sign Out", role: .destructive) {
                             Task {
                                 await SourceAuthenticator.shared.signOut(of: account)
+                                AccountPlaylistStore.removePlaylists(for: account.id)
                                 isSignedIn = false
                                 signedInAs = nil
                             }
