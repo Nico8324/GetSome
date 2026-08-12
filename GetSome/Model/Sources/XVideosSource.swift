@@ -69,10 +69,12 @@ struct XVideosSource: ContentSource {
         }
     }
 
-    /// A person's own playlists are the only feeds that need a session.
+    /// The feeds that need a session: a person's playlists, and their likes.
     func requiresSignIn(_ feed: Feed) -> Bool {
-        playlistID(for: feed) != nil
+        playlistID(for: feed) != nil || feed.slug == Self.likedSlug
     }
+
+    static let likedSlug = "liked"
 
     /// Posts to the account API for a playlist, which has no page behind it.
     ///
@@ -92,6 +94,17 @@ struct XVideosSource: ContentSource {
     /// Those video fields are the same family as `var video_related` on a watch page,
     /// so ``videos(inEntries:)`` reads both.
     func listingRequest(for feed: Feed, page: Int) -> URLRequest? {
+        if feed.sourceID == id, feed.slug == Self.likedSlug {
+            // One call returns every liked id at once, so every page asks the same
+            // question — the paging happens over the ids, in ContentClient. Returning
+            // nil for later pages instead would report the feed as unavailable the
+            // moment anyone scrolled.
+            var liked = request(for: homeURL.appending(path: "videos-i-like/all-ids"))
+            liked.httpMethod = "POST"
+            liked.setValue("XMLHttpRequest", forHTTPHeaderField: "X-Requested-With")
+            liked.setValue("application/json, text/javascript", forHTTPHeaderField: "Accept")
+            return liked
+        }
         guard let playlist = playlistID(for: feed) else {
             return listingURL(for: feed, page: page).map { request(for: $0) }
         }
@@ -152,8 +165,11 @@ struct XVideosSource: ContentSource {
     }
 
     func watchURL(forItem itemID: String) -> URL {
-        // The slug after the identifier is decorative; the site resolves the id.
-        homeURL.appending(path: "video.\(itemID)/x")
+        // Two id spaces. Listings publish the `eid` hash; the account API publishes
+        // the site's older numeric id, and each has its own URL shape. The slug after
+        // the identifier is decorative either way.
+        let isNumeric = !itemID.isEmpty && itemID.allSatisfy(\.isNumber)
+        return homeURL.appending(path: isNumeric ? "video\(itemID)/x" : "video.\(itemID)/x")
     }
 
     // MARK: - Parsing
@@ -170,6 +186,20 @@ struct XVideosSource: ContentSource {
         let blocks = html.components(separatedBy: "<div id=\"video_").dropFirst()
         var seen = Set<String>()
         return blocks.compactMap(video(inBlock:)).filter { seen.insert($0.itemID).inserted }
+    }
+
+    /// Reads the ids the "videos I like" list publishes.
+    ///
+    /// That endpoint answers ids alone — `data.ids` is keyed by them — so a feed
+    /// built on it has to resolve each one before it can draw a card. See
+    /// ``ContentClient/videos(for:page:)``.
+    func itemIDs(inListing response: SourceResponse) throws -> [String] {
+        guard let root = try? JSONSerialization.jsonObject(with: response.data) as? [String: Any],
+              let data = root["data"] as? [String: Any],
+              let ids = data["ids"] as? [String: Any] else { return [] }
+        // Newest first: the site hands them back in no useful order, and a stable
+        // one at least makes paging repeatable.
+        return ids.keys.sorted { ($0.count, $0) > ($1.count, $1) }
     }
 
     /// Reads the playlists out of the account API's index answer.
@@ -220,10 +250,15 @@ struct XVideosSource: ContentSource {
         let html = response.text
         let streams = self.streams(in: html)
 
+        // A page reached by numeric id names its own `eid`. Adopting it means a
+        // liked video becomes an ordinary video — same identity as everywhere else,
+        // so saving, history and playback all keep working without special cases.
+        let resolved = HTMLScanner.firstMatch(of: #""eid"\s*:\s*"([^"]+)""#, in: html) ?? itemID
+
         return VideoDetails(
             sources: streams,
-            related: related(inWatchPage: html).filter { $0.itemID != itemID },
-            video: video(inWatchPage: html, streams: streams, itemID: itemID)
+            related: related(inWatchPage: html).filter { $0.itemID != resolved },
+            video: video(inWatchPage: html, streams: streams, itemID: resolved)
         )
     }
 
@@ -427,7 +462,14 @@ extension XVideosSource {
     /// would only ever fail.
     var accountFeeds: [Feed] {
         guard CredentialStore.hasCredential(for: id) else { return [] }
-        return AccountPlaylistStore.playlists(for: id).map { playlist in
+        let liked = makeFeed(
+            Self.likedSlug,
+            name: String(localized: "Liked", comment: "Collection name"),
+            description: String(localized: "The videos you marked as liked on this site.",
+                                comment: "The description of a collection of videos."),
+            icon: "hand.thumbsup"
+        )
+        return [liked] + AccountPlaylistStore.playlists(for: id).map { playlist in
             makeFeed(
                 Self.playlistFeedPrefix + playlist.id,
                 name: playlist.name,

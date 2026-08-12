@@ -61,7 +61,17 @@ actor ContentClient {
         // RequestLog. See SourceAuthenticator.
         if source.requiresSignIn(feed), let account = source as? any AuthenticatingSource {
             let (response, status) = try await SourceAuthenticator.shared.page(for: pageRequest, from: account)
-            let videos = try source.videos(inListing: response)
+            var videos = try source.videos(inListing: response)
+
+            // A listing that publishes ids alone — the liked-videos list — is resolved
+            // a page at a time. Every id costs a request, so the page size is the
+            // limit on how many: the whole list would be hundreds.
+            if videos.isEmpty {
+                let ids = try source.itemIDs(inListing: response)
+                if !ids.isEmpty {
+                    videos = await resolve(ids: ids, page: page, from: source)
+                }
+            }
             if videos.isEmpty {
                 // Also to the system log, marked public so it survives redaction.
                 // Reading a diagnostics screen through screenshots is slower and
@@ -112,6 +122,45 @@ actor ContentClient {
         let videos = try source.videos(inListing: response)
         try note(videos.count, for: response, intent: "search “\(query)” p\(page)", source: source, page: page)
         return videos
+    }
+
+    /// The most ids to resolve for one page of a listing that publishes ids alone.
+    private static let resolvedPageSize = 24
+
+    /// Turns bare item identifiers into videos, one page's worth at a time.
+    ///
+    /// Each id needs its own watch page, so these run concurrently and the ones that
+    /// fail are dropped rather than failing the page: a liked video the site has
+    /// since removed is normal, and shouldn't empty the shelf.
+    private func resolve(ids: [String], page: Int, from source: any ContentSource) async -> [Video] {
+        let start = (page - 1) * Self.resolvedPageSize
+        guard start < ids.count else { return [] }
+        let slice = Array(ids[start..<min(start + Self.resolvedPageSize, ids.count)])
+
+        return await withTaskGroup(of: (Int, Video?).self) { group in
+            for (offset, itemID) in slice.enumerated() {
+                group.addTask { [weak self] in
+                    guard let self else { return (offset, nil) }
+                    return (offset, await self.video(forItemID: itemID, from: source))
+                }
+            }
+            // Reassembled by position: the site's order is the person's order, and a
+            // task group finishes in whatever order the network allows.
+            var found = [(Int, Video)]()
+            for await (offset, video) in group {
+                if let video { found.append((offset, video)) }
+            }
+            return found.sorted { $0.0 < $1.0 }.map(\.1)
+        }
+    }
+
+    private func video(forItemID itemID: String, from source: any ContentSource) async -> Video? {
+        do {
+            let response = try await fetch(source.watchURL(forItem: itemID), from: source, intent: "resolve")
+            return try source.details(inWatchPage: response, itemID: itemID).video
+        } catch {
+            return nil
+        }
     }
 
     /// Refreshes the playlists a signed-in person keeps, so they can be feeds.

@@ -168,6 +168,12 @@ protocol ContentSource: Sendable {
     /// Returns the videos a listing or search response contains.
     func videos(inListing response: SourceResponse) throws -> [Video]
 
+    /// Returns the item identifiers a listing publishes when it carries ids alone.
+    ///
+    /// Most listings publish whole videos. A few publish only identifiers — xvideos'
+    /// liked-videos list is one — and each has to be resolved before it can be drawn.
+    func itemIDs(inListing response: SourceResponse) throws -> [String]
+
     /// Returns the playback sources and metadata a detail response contains.
     func details(inWatchPage response: SourceResponse, itemID: String) throws -> VideoDetails
 
@@ -253,6 +259,9 @@ extension ContentSource {
     /// Default false: most feeds are public, and a source without accounts never
     /// answers anything else.
     func requiresSignIn(_ feed: Feed) -> Bool { false }
+
+    /// Most listings publish whole videos, so there are no bare ids to resolve.
+    func itemIDs(inListing response: SourceResponse) throws -> [String] { [] }
 
     func listingRequest(for feed: Feed, page: Int) -> URLRequest? {
         listingURL(for: feed, page: page).map { request(for: $0) }
