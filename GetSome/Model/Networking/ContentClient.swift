@@ -70,6 +70,13 @@ actor ContentClient {
                               failure: videos.isEmpty ? Self.shape(of: response.text) : nil,
                               date: .now)
             )
+            // Held to the same rule as every other feed: a first page that parses to
+            // nothing is reported, not shown as an empty shelf. These two pages build
+            // themselves in JavaScript, so this currently always fires — and saying so
+            // is the point. An empty feed would read as "you have no favorites".
+            if videos.isEmpty, page == 1 {
+                throw ContentError.noResults(source.displayName)
+            }
             return videos
         }
 
@@ -273,7 +280,33 @@ actor ContentClient {
             .map { ($0.0, html.components(separatedBy: $0.1).count - 1) }
             .filter { $0.1 > 0 }
             .map { "\($0.0)=\($0.1)" }
-        return found.isEmpty ? "no recognizable blocks" : "shape: " + found.joined(separator: " ")
+
+        // A page with no content markers is usually rendered by its own JavaScript,
+        // which means the data comes from somewhere else. Naming the endpoints it
+        // references turns "this parser can't work" into "call this instead".
+        // These are paths in the site's code, not anything about the account.
+        let endpoints = Self.endpointPaths(in: html)
+        let parts = [
+            found.isEmpty ? "no recognizable blocks" : "shape: " + found.joined(separator: " "),
+            endpoints.isEmpty ? "" : "endpoints: " + endpoints.joined(separator: " ")
+        ].filter { !$0.isEmpty }
+        return parts.joined(separator: " · ")
+    }
+
+    /// The data endpoints a client-rendered page references.
+    private static func endpointPaths(in html: String) -> [String] {
+        let pattern = #"["'](/[a-zA-Z0-9/_.-]*(?:ajax|json|api|playlist|subscription)[a-zA-Z0-9/_.-]*)["']"#
+        guard let expression = try? NSRegularExpression(pattern: pattern) else { return [] }
+        var seen = Set<String>()
+        for match in expression.matches(in: html, range: NSRange(html.startIndex..., in: html)) {
+            guard let range = Range(match.range(at: 1), in: html) else { continue }
+            let path = String(html[range])
+            // Skip stylesheets and images; they're never the data source.
+            guard !path.hasSuffix(".css"), !path.hasSuffix(".png"), !path.hasSuffix(".jpg") else { continue }
+            seen.insert(path)
+            if seen.count >= 6 { break }
+        }
+        return seen.sorted()
     }
 
     /// Returns whether a site answered with its home page instead of the page asked for.
