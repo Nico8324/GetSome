@@ -22,14 +22,19 @@ third-party sites.
 | **mat6tube** | popular · newest · explore · watching now · 3 charts | — *(publishes no index)* | progressive MP4 |
 | **XVideos** | popular · newest · verified | ~2,000 tags | HLS · 250p–1080p |
 | **MissAV** | popular · newest · releases · uncensored · 2 subtitle feeds · 3 charts | 37 genres | HLS · 360p–1080p |
-| **Pornhub** | hot · newest · 3 charts | — | ⚠️ **currently unavailable** |
 
-> [!WARNING]
-> **Pornhub stopped serving this client.** Every browse route (`/video?o=…`,
-> `/categories`, search) answers `302 → /`, and watch pages return 200 with no
-> manifests. A full browser session with age cookies behaves identically, so this
-> is age assurance at the account level rather than markup drift — the outcome
-> [NOTICE.md](NOTICE.md) describes for a site that adopts real age verification.
+> [!NOTE]
+> **Pornhub was removed**, having previously shipped here. Every browse route
+> answered `302 → /`, so all five of its feeds served the homepage — and because
+> `URLSession` follows that redirect, each one returned a healthy `200` with 24
+> parsed videos. Neither `badResponse` nor `noResults` could fire; the source
+> looked perfectly healthy while showing the same 24 videos everywhere.
+>
+> A full browser session with age cookies behaved identically, so this is account
+> level age assurance rather than markup drift — the outcome
+> [NOTICE.md](NOTICE.md) describes for a site that adopts real age verification,
+> and not something to work around. Removal was one line in `ContentSources.all`
+> plus the file; anything saved from it stays in the library marked unavailable.
 
 **MissAV publishes in 11 languages**, and the source follows the device rather than
 pinning English, so titles and genre names usually arrive already translated — see
@@ -58,14 +63,13 @@ flowchart TD
         D[Mat6TubeSource]
         E[XVideosSource]
         F[MissAVSource]
-        G[PornhubSource]
     end
 
     A --> B
     A --> T
     B --> C
     C --> L
-    C --> D & E & F & G
+    C --> D & E & F
 
     style src fill:#0d1117,stroke:#f05138,stroke-width:2px
     style C fill:#0d1117,stroke:#1f6feb,stroke-width:2px

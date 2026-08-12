@@ -12,9 +12,10 @@ import Foundation
 /// Adding a site is a one-line change here plus its ``ContentSource`` conformance.
 enum ContentSources {
     /// Every source the app ships with, in presentation order.
+    /// Removing a source is the same one-line change. Anything saved from it keeps
+    /// working as a record — see ``Video/isAvailable`` — rather than disappearing.
     static let all: [any ContentSource] = [
         Mat6TubeSource(),
-        PornhubSource(),
         XVideosSource(),
         MissAVSource()
     ]
