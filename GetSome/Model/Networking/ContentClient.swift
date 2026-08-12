@@ -56,7 +56,8 @@ actor ContentClient {
         // the login cookies — and, just as deliberately, doesn't record anything to
         // RequestLog. See SourceAuthenticator.
         if source.requiresSignIn(feed), let account = source as? any AuthenticatingSource {
-            let (response, status) = try await SourceAuthenticator.shared.page(at: url, from: account)
+            let pageRequest = source.listingRequest(for: feed, page: page) ?? source.request(for: url)
+            let (response, status) = try await SourceAuthenticator.shared.page(for: pageRequest, from: account)
             let videos = try source.videos(inListing: response)
             // Recorded without its body, unlike every other request. An empty
             // account feed is otherwise unreadable: a page that parses to nothing
@@ -267,6 +268,12 @@ actor ContentClient {
     /// report shouldn't carry. Counting the markers a parser looks for says which
     /// kind of page arrived (videos, playlists, channels) and nothing about whose.
     private static func shape(of html: String) -> String {
+        // A JSON answer is described by its keys. Values are the account's contents;
+        // the key names are the site's schema, and the schema is what's missing.
+        if let data = html.data(using: .utf8),
+           let object = try? JSONSerialization.jsonObject(with: data) {
+            return "json " + Self.keys(of: object, depth: 0).joined(separator: " ")
+        }
         let markers = [
             ("video-blocks", "<div id=\"video_"),
             ("eid", "data-eid="),
@@ -291,6 +298,23 @@ actor ContentClient {
             endpoints.isEmpty ? "" : "endpoints: " + endpoints.joined(separator: " ")
         ].filter { !$0.isEmpty }
         return parts.joined(separator: " · ")
+    }
+
+    /// Names the keys of a JSON answer, and nothing else it contains.
+    private static func keys(of object: Any, depth: Int) -> [String] {
+        guard depth < 3 else { return [] }
+        switch object {
+        case let dictionary as [String: Any]:
+            return dictionary.keys.sorted().flatMap { key -> [String] in
+                let nested = Self.keys(of: dictionary[key] ?? "", depth: depth + 1)
+                return nested.isEmpty ? [key] : ["\(key){\(nested.prefix(12).joined(separator: ","))}"]
+            }
+        case let array as [Any]:
+            // One element is enough to learn the element type's shape.
+            return array.first.map { ["[\(Self.keys(of: $0, depth: depth + 1).prefix(14).joined(separator: ","))]"] } ?? ["[]"]
+        default:
+            return []
+        }
     }
 
     /// The data endpoints a client-rendered page references.

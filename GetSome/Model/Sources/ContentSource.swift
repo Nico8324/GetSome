@@ -188,6 +188,13 @@ protocol ContentSource: Sendable {
     /// Whether a feed can only be read while signed in.
     func requiresSignIn(_ feed: Feed) -> Bool
 
+    /// The request that loads a page of a feed.
+    ///
+    /// Defaults to a GET of ``listingURL(for:page:)``. A source overrides this when a
+    /// listing isn't a page at all — xvideos serves its account data from a JSON API
+    /// that only answers POST.
+    func listingRequest(for feed: Feed, page: Int) -> URLRequest?
+
     /// The headers to attach to media requests for this source.
     ///
     /// The player fetches manifests and segments on its own networking stack, which
@@ -246,6 +253,10 @@ extension ContentSource {
     /// Default false: most feeds are public, and a source without accounts never
     /// answers anything else.
     func requiresSignIn(_ feed: Feed) -> Bool { false }
+
+    func listingRequest(for feed: Feed, page: Int) -> URLRequest? {
+        listingURL(for: feed, page: page).map { request(for: $0) }
+    }
 
     /// Sends media requests with the same identification a page request carries.
     ///

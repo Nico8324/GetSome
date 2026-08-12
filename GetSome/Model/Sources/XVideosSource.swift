@@ -84,9 +84,27 @@ struct XVideosSource: ContentSource {
         }
     }
 
-    /// The two feeds that only exist for a signed-in person.
+    /// The feeds that only exist for a signed-in person.
     func requiresSignIn(_ feed: Feed) -> Bool {
-        feed.sourceID == id && ["playlists", "subscriptions"].contains(feed.slug)
+        feed.sourceID == id && ["playlists", "subscriptions", "myplaylists"].contains(feed.slug)
+    }
+
+    /// Posts to the account API for the feeds that have no page behind them.
+    ///
+    /// The account area is rendered in JavaScript, so its listings aren't documents —
+    /// they're these calls, which the site's own account module makes. They answer
+    /// JSON and only to POST.
+    func listingRequest(for feed: Feed, page: Int) -> URLRequest? {
+        guard feed.sourceID == id, feed.slug == "myplaylists" else {
+            return listingURL(for: feed, page: page).map { request(for: $0) }
+        }
+        // Named `listing` rather than `request`: a local called `request` shadows
+        // `request(for:)` and the initializer stops resolving.
+        var listing = request(for: homeURL.appending(path: "api/playlists/last-updated/\(page - 1)"))
+        listing.httpMethod = "POST"
+        listing.setValue("XMLHttpRequest", forHTTPHeaderField: "X-Requested-With")
+        listing.setValue("application/json, text/javascript", forHTTPHeaderField: "Accept")
+        return listing
     }
 
     func searchURL(query: String, page: Int) -> URL? {
@@ -380,7 +398,12 @@ extension XVideosSource {
                      name: String(localized: "Favorites", comment: "Collection name"),
                      description: String(localized: "The playlists you keep on this site.",
                                          comment: "The description of a collection of videos."),
-                     icon: "heart.text.square")
+                     icon: "heart.text.square"),
+            makeFeed("myplaylists",
+                     name: String(localized: "Playlists", comment: "Collection name"),
+                     description: String(localized: "The playlists you keep on this site.",
+                                         comment: "The description of a collection of videos."),
+                     icon: "list.and.film")
         ]
     }
 }
