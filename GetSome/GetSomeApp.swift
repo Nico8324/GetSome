@@ -12,6 +12,12 @@ import os
 /// The main app structure.
 @main
 struct GetSomeApp: App {
+    #if os(iOS)
+    /// Answers UIKit's question about which orientations the app allows, so the
+    /// full-window player can rotate while the browsing screens stay portrait.
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    #endif
+
     /// An object that manages the model storage configuration.
     private let modelContainer: ModelContainer
 

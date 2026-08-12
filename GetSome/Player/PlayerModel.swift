@@ -26,7 +26,17 @@ enum Presentation {
     private(set) var isPlaybackComplete = false
 
     /// The presentation in which to display the current media.
-    private(set) var presentation: Presentation = .inline
+    ///
+    /// On iPhone this also decides whether the app may rotate: the rest of the app
+    /// is portrait-only, and a full-window video is the one thing worth turning the
+    /// device sideways for. See ``AppDelegate``.
+    private(set) var presentation: Presentation = .inline {
+        didSet {
+            #if os(iOS)
+            AppDelegate.supportedOrientations = presentation == .fullWindow ? .allButUpsideDown : .portrait
+            #endif
+        }
+    }
 
     /// The currently loaded video.
     private(set) var currentItem: Video? = nil
