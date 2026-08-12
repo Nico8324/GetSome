@@ -101,18 +101,34 @@ enum HTMLScanner {
         }
     }
 
+    /// The named entities site titles actually contain.
+    ///
+    /// Mostly punctuation: sites write titles in a CMS that turns quotes and dashes
+    /// into typographic forms, and those arrive named rather than numeric. Accented
+    /// letters are left to ``decodeNumericEntities(_:)`` — they come through as
+    /// numeric escapes or as plain UTF-8, and listing every one of them here would
+    /// be a table without an end.
+    ///
+    /// `&amp;` is deliberately absent; see ``decode(_:)``.
+    private static let namedEntities = [
+        ("&quot;", "\""), ("&apos;", "'"), ("&lt;", "<"), ("&gt;", ">"), ("&nbsp;", " "),
+        ("&rsquo;", "’"), ("&lsquo;", "‘"), ("&rdquo;", "”"), ("&ldquo;", "“"),
+        ("&mdash;", "—"), ("&ndash;", "–"), ("&hellip;", "…"), ("&bull;", "•"),
+        ("&middot;", "·"), ("&laquo;", "«"), ("&raquo;", "»"), ("&deg;", "°"),
+        ("&times;", "×"), ("&copy;", "©"), ("&reg;", "®"), ("&trade;", "™")
+    ]
+
     /// Replaces the HTML entities that markup commonly contains.
     static func decode(_ text: String) -> String {
         guard text.contains("&") else { return text }
         var result = text
-        let entities = [
-            ("&amp;", "&"), ("&quot;", "\""), ("&#39;", "'"), ("&apos;", "'"),
-            ("&lt;", "<"), ("&gt;", ">"), ("&nbsp;", " ")
-        ]
-        for (entity, replacement) in entities {
+        for (entity, replacement) in namedEntities {
             result = result.replacingOccurrences(of: entity, with: replacement)
         }
-        return decodeNumericEntities(result)
+        result = decodeNumericEntities(result)
+        // Last, always. `&amp;lt;` is an escaped literal "&lt;", so decoding the
+        // ampersand first would turn it into a "<" the title never contained.
+        return result.replacingOccurrences(of: "&amp;", with: "&")
     }
 }
 

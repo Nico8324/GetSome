@@ -54,7 +54,7 @@ actor ContentClient {
         }
         let response = try await fetch(url, from: source, intent: "\(feed.name) p\(page)")
         let videos = try source.videos(inListing: response)
-        try await note(videos.count, for: response, intent: "\(feed.name) p\(page)", source: source, page: page)
+        try note(videos.count, for: response, intent: "\(feed.name) p\(page)", source: source, page: page)
         return videos
     }
 
@@ -71,7 +71,7 @@ actor ContentClient {
         guard let url = source.searchURL(query: query, page: page) else { return [] }
         let response = try await fetch(url, from: source, intent: "search “\(query)” p\(page)")
         let videos = try source.videos(inListing: response)
-        try await note(videos.count, for: response, intent: "search “\(query)” p\(page)", source: source, page: page)
+        try note(videos.count, for: response, intent: "search “\(query)” p\(page)", source: source, page: page)
         return videos
     }
 
