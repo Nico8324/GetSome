@@ -16,6 +16,7 @@ enum ContentSources {
     /// working as a record — see ``Video/isAvailable`` — rather than disappearing.
     static let all: [any ContentSource] = [
         Mat6TubeSource(),
+        PornhubSource(),
         XVideosSource(),
         MissAVSource()
     ]

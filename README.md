@@ -22,19 +22,20 @@ third-party sites.
 | **mat6tube** | popular · newest · explore · watching now · 3 charts | — *(publishes no index)* | progressive MP4 |
 | **XVideos** | popular · newest · verified | ~2,000 tags | HLS · 250p–1080p |
 | **MissAV** | popular · newest · releases · uncensored · 2 subtitle feeds · 3 charts | 37 genres | HLS · 360p–1080p |
+| **Pornhub** | hot · newest · 3 charts | — | adaptive HLS · *region-dependent* |
 
 > [!NOTE]
-> **Pornhub was removed**, having previously shipped here. Every browse route
-> answered `302 → /`, so all five of its feeds served the homepage — and because
-> `URLSession` follows that redirect, each one returned a healthy `200` with 24
-> parsed videos. Neither `badResponse` nor `noResults` could fire; the source
-> looked perfectly healthy while showing the same 24 videos everywhere.
+> **Pornhub is unavailable in some countries**, and the app now says so instead of
+> pretending otherwise. Where age-verification law applies, every browse route
+> answers `302 → /`. `URLSession` follows that, so each feed used to return a
+> healthy `200` with 24 parsed videos — the home page, shown five times under
+> different names, with neither `badResponse` nor `noResults` able to notice.
 >
-> A full browser session with age cookies behaved identically, so this is account
-> level age assurance rather than markup drift — the outcome
-> [NOTICE.md](NOTICE.md) describes for a site that adopts real age verification,
-> and not something to work around. Removal was one line in `ContentSources.all`
-> plus the file; anything saved from it stays in the library marked unavailable.
+> `ContentClient` now treats *redirected to the site root* as its own failure and
+> reports it. Where the site serves normally, the source works normally; the check
+> only fires on the redirect. It is deliberately narrow — a redirect that merely
+> adds a trailing slash, resolves to a different page, or leaves the host is not
+> this — so it can't break a working site.
 
 **MissAV publishes in 11 languages**, and the source follows the device rather than
 pinning English, so titles and genre names usually arrive already translated — see
@@ -63,13 +64,14 @@ flowchart TD
         D[Mat6TubeSource]
         E[XVideosSource]
         F[MissAVSource]
+        G[PornhubSource]
     end
 
     A --> B
     A --> T
     B --> C
     C --> L
-    C --> D & E & F
+    C --> D & E & F & G
 
     style src fill:#0d1117,stroke:#f05138,stroke-width:2px
     style C fill:#0d1117,stroke:#1f6feb,stroke-width:2px

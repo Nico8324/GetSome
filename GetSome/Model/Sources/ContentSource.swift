@@ -297,6 +297,7 @@ enum ContentError: LocalizedError {
     case unreadablePage
     case noResults(String)
     case noPlayableSource
+    case redirectedHome(String)
 
     var errorDescription: String? {
         switch self {
@@ -317,6 +318,11 @@ enum ContentError: LocalizedError {
                 """, comment: "An error shown when a site's markup no longer parses")
         case .noPlayableSource:
             String(localized: "This video doesn’t have a stream to play.", comment: "A playback error message")
+        case .redirectedHome(let name):
+            String(localized: """
+                \(name) sent this request to its home page instead of the feed. That usually \
+                means the site doesn’t serve this content where you are.
+                """, comment: "An error shown when a site redirects every request to its home page")
         }
     }
 }

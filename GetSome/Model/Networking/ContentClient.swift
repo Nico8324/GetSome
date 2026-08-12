@@ -192,10 +192,12 @@ actor ContentClient {
     ) async throws -> SourceResponse {
         let data: Data
         let status: Int?
+        let finalURL: URL
         do {
             let (body, response) = try await session.data(for: source.request(for: url))
             data = body
             status = (response as? HTTPURLResponse)?.statusCode
+            finalURL = response.url ?? url
         } catch {
             await RequestLog.shared.record(
                 RequestRecord(sourceID: source.id, intent: intent, url: url, statusCode: nil,
@@ -216,8 +218,40 @@ actor ContentClient {
         }
         guard !data.isEmpty else { throw ContentError.unreadablePage }
 
+        if Self.isRedirectHome(requested: url, final: finalURL, source: source) {
+            logger.error("Request for \(url.absoluteString, privacy: .public) was sent to the home page")
+            await RequestLog.shared.record(
+                RequestRecord(sourceID: source.id, intent: intent, url: url, statusCode: status,
+                              byteCount: data.count, parsedCount: nil,
+                              failure: "redirected home", date: .now)
+            )
+            throw ContentError.redirectedHome(source.displayName)
+        }
+
         lastResponse = (source.id, intent, url, status, data)
-        return SourceResponse(url: url, data: data)
+        return SourceResponse(url: finalURL, data: data)
+    }
+
+    /// Returns whether a site answered with its home page instead of the page asked for.
+    ///
+    /// A site that withholds its catalog by region tends to redirect every listing to
+    /// the front page rather than refuse outright. That arrives as a perfectly healthy
+    /// 200 full of videos, so neither the status check nor the parse count notices —
+    /// every feed quietly shows the same home page under a different name.
+    ///
+    /// Only a redirect *to the root* counts. Sites redirect for ordinary reasons —
+    /// adding a trailing slash, resolving a shortened path — and treating those as
+    /// failures would break working sources.
+    private static func isRedirectHome(requested: URL, final: URL, source: any ContentSource) -> Bool {
+        func path(_ url: URL) -> String {
+            let trimmed = url.path().trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+            return trimmed
+        }
+        // Asking for the home page and receiving it is not a redirect.
+        guard !path(requested).isEmpty || requested.query() != nil else { return false }
+        guard path(final).isEmpty, final.query() == nil else { return false }
+        // Same site, so a redirect to a different host isn't misread as this.
+        return final.host() == source.homeURL.host()
     }
 
     /// The most recent successful fetch, held so its parse result can be recorded.
