@@ -359,7 +359,11 @@ struct XVideosSource: ContentSource {
         guard let title = HTMLScanner.firstMatch(of: #"html5player\.setVideoTitle\('(.*?)'\);"#, in: html) else {
             return nil
         }
+        // `og:duration` is the fallback because the player call isn't on every watch
+        // page — the ones reached by numeric id, which is how the Liked feed resolves
+        // its videos, carry the meta tag instead. Both are already in seconds.
         let duration = HTMLScanner.firstMatch(of: #"html5player\.setVideoFullDuration\((\d+)\)"#, in: html)
+            ?? HTMLScanner.firstMatch(of: #"<meta property="og:duration" content="(\d+)""#, in: html)
 
         return Video(
             sourceID: id,
