@@ -153,6 +153,10 @@
 				ko,
 				hi,
 				zh_CN,
+				es,
+				pt,
+				it,
+				ru,
 			);
 			mainGroup = C4462E6829AAAB2E00E3C854;
 			productRefGroup = C4462E7229AAAB2E00E3C854 /* Products */;

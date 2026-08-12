@@ -310,6 +310,21 @@ count is the health signal:
 
 ---
 
+## Languages
+
+The interface ships in **ten languages** — English, French, German, Spanish,
+Portuguese, Italian, Russian, Japanese, Korean, Hindi and Simplified Chinese —
+held in one `Localizable.xcstrings`.
+
+That is separate from the translation feature, which translates *site* text
+(video titles and keywords) and is off by default. This is the app's own chrome,
+and it needs no network and no setting.
+
+> [!TIP]
+> Fifteen strings carry format specifiers. A translation that drops or reorders
+> `%@` and `%lld` crashes at runtime rather than merely reading badly, so check
+> the specifier sequence against the source string before adding a language.
+
 ## Requirements
 
 **iOS 26 · macOS 26 · tvOS 26 · visionOS 26.** Build all four before pushing shared

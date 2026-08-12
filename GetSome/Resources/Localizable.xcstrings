@@ -11,6 +11,12 @@
             "value": "%@ hat geantwortet, aber diese App hat auf der Seite nichts erkannt. Wahrscheinlich hat sich die Website geändert. Unter Profil › Diagnose lässt sich exportieren, was gesendet wurde."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ respondió, pero esta app no reconoció nada en la página. Es probable que el sitio haya cambiado. En Perfil › Diagnóstico puedes exportar lo que se envió."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -23,6 +29,12 @@
             "value": "%@ ने जवाब दिया, लेकिन यह ऐप पेज पर कुछ भी नहीं पहचान सका। संभवतः साइट बदल गई है। प्रोफ़ाइल › डायग्नोस्टिक्स से भेजी गई सामग्री निर्यात की जा सकती है।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ ha risposto, ma questa app non ha riconosciuto nulla nella pagina. Probabilmente il sito è cambiato. In Profilo › Diagnostica puoi esportare ciò che è stato inviato."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -33,6 +45,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@에서 응답했지만 이 앱이 페이지에서 아무것도 인식하지 못했습니다. 사이트가 변경된 것 같습니다. 프로필 › 진단에서 전송한 내용을 내보낼 수 있습니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ respondeu, mas esta app não reconheceu nada na página. O site provavelmente mudou. Em Perfil › Diagnóstico pode exportar o que foi enviado."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ ответил, но это приложение ничего не распознало на странице. Скорее всего, сайт изменился. В разделе «Профиль › Диагностика» можно выгрузить отправленные данные."
           }
         },
         "zh_CN": {
@@ -53,6 +77,12 @@
             "value": "%@ veröffentlicht keine Kategorienliste."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ no publica una lista de categorías."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -65,6 +95,12 @@
             "value": "%@ श्रेणी सूची प्रकाशित नहीं करता।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ non pubblica un elenco di categorie."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -75,6 +111,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@은(는) 카테고리 목록을 제공하지 않습니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ não publica uma lista de categorias."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ не публикует список категорий."
           }
         },
         "zh_CN": {
@@ -94,6 +142,12 @@
             "value": "%@ unterstützt keine Suche."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ no admite búsquedas."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -106,6 +160,12 @@
             "value": "%@ खोज का समर्थन नहीं करता।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ non supporta la ricerca."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -116,6 +176,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@은(는) 검색을 지원하지 않습니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ não permite pesquisa."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ не поддерживает поиск."
           }
         },
         "zh_CN": {
@@ -141,6 +213,12 @@
             "value": "%1$@ long, %2$@"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ de duración, %@"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -151,6 +229,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ लंबा, %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ di durata, %@"
           }
         },
         "ja": {
@@ -165,10 +249,87 @@
             "value": "길이 %@, %@"
           }
         },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ de duração, %@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ длительность, %@"
+          }
+        },
         "zh_CN": {
           "stringUnit": {
             "state": "translated",
             "value": "时长 %@，%@"
+          }
+        }
+      }
+    },
+    "%@ sent this request to its home page instead of the feed. That usually means the site doesn’t serve this content where you are.": {
+      "comment": "An error shown when a site redirects every request to its home page",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ hat diese Anfrage auf die Startseite geleitet statt auf den Feed. Das bedeutet meist, dass die Website diese Inhalte an deinem Standort nicht anbietet."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ envió esta solicitud a su página principal en lugar de al canal. Normalmente eso significa que el sitio no ofrece este contenido donde estás."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ a redirigé cette requête vers sa page d’accueil au lieu du flux. Cela signifie généralement que le site ne propose pas ce contenu là où vous êtes."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ ने इस अनुरोध को फ़ीड के बजाय अपने होम पेज पर भेज दिया। आमतौर पर इसका अर्थ है कि साइट आपके क्षेत्र में यह सामग्री उपलब्ध नहीं कराती।"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ ha indirizzato questa richiesta alla propria home page invece che al feed. Di solito significa che il sito non offre questo contenuto dove ti trovi."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ はこのリクエストをフィードではなくホームページに転送しました。通常、これはお住まいの地域でこのコンテンツが提供されていないことを意味します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@이(가) 이 요청을 피드가 아닌 홈페이지로 보냈습니다. 보통 현재 위치에서 이 콘텐츠를 제공하지 않는다는 뜻입니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ enviou este pedido para a página inicial em vez do canal. Normalmente isso significa que o site não disponibiliza este conteúdo onde está."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ перенаправил этот запрос на главную страницу вместо ленты. Обычно это значит, что сайт не показывает этот контент в вашем регионе."
+          }
+        },
+        "zh_CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 将此请求转到了首页而不是内容源。这通常表示该网站不在你所在的地区提供此内容。"
           }
         }
       }
@@ -180,6 +341,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ Videos"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ vídeos"
           }
         },
         "fr": {
@@ -194,6 +361,12 @@
             "value": "%@ वीडियो"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ video"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -204,6 +377,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "동영상 %@개"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ vídeos"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ видео"
           }
         },
         "zh_CN": {
@@ -223,6 +408,12 @@
             "value": "%@ Aufrufe"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ visualizaciones"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -235,6 +426,12 @@
             "value": "%@ बार देखा गया"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ visualizzazioni"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -245,6 +442,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "조회수 %@"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ visualizações"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ просмотров"
           }
         },
         "zh_CN": {
@@ -265,6 +474,12 @@
             "value": "%lld Anfrage(n) haben eine Seite zurückgegeben, die diese App nicht erkannt hat"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld solicitud(es) devolvieron una página que esta app no reconoció"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -277,6 +492,12 @@
             "value": "%lld अनुरोध(ों) से ऐसा पेज मिला जिसे यह ऐप नहीं पहचान सका"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld richiesta/e hanno restituito una pagina che questa app non ha riconosciuto"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -287,6 +508,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld개의 요청에서 이 앱이 인식하지 못한 페이지가 반환되었습니다"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld pedido(s) devolveram uma página que esta app não reconheceu"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld запрос(ов) вернули страницу, которую это приложение не распознало"
           }
         },
         "zh_CN": {
@@ -305,6 +538,12 @@
             "value": "Ein Protokoll der letzten Anfragen, um einen nicht mehr funktionierenden Feed zu melden."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un registro de las solicitudes recientes, para informar de un canal que dejó de funcionar."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -317,6 +556,12 @@
             "value": "हाल के अनुरोधों का रिकॉर्ड, ताकि बंद हो चुकी फ़ीड की शिकायत की जा सके।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un registro delle richieste recenti, per segnalare un feed che ha smesso di funzionare."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -327,6 +572,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "작동을 멈춘 피드를 신고할 때 사용하는 최근 요청 기록입니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um registo dos pedidos recentes, para comunicar um canal que deixou de funcionar."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Журнал последних запросов — чтобы сообщить о ленте, которая перестала работать."
           }
         },
         "zh_CN": {
@@ -346,6 +603,12 @@
             "value": "Eine größere Auswahl aus dem gesamten Katalog."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una selección más amplia, tomada de todo el catálogo."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -358,6 +621,12 @@
             "value": "पूरे कैटलॉग से लिया गया व्यापक मिश्रण।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una selezione più ampia, presa da tutto il catalogo."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -368,6 +637,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "카탈로그 전체에서 모은 더 폭넓은 목록."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uma seleção mais ampla, retirada de todo o catálogo."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Более широкая подборка со всего каталога."
           }
         },
         "zh_CN": {
@@ -388,6 +669,12 @@
             "value": "Über"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Información"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -400,6 +687,12 @@
             "value": "परिचय"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Info"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -410,6 +703,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "정보"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acerca"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "О приложении"
           }
         },
         "zh_CN": {
@@ -430,6 +735,12 @@
             "value": "Gilt ab dem nächsten Videostart; nicht jede Website bietet jede Auflösung an. Automatisch nutzt auf diesem Gerät bis zu %lldp."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se aplica la próxima vez que empiece un vídeo, y los sitios no siempre ofrecen todas las resoluciones. Automática usa hasta %lldp en este dispositivo."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -442,6 +753,12 @@
             "value": "अगली बार वीडियो शुरू होने पर लागू होगा, और साइटें हमेशा हर रिज़ॉल्यूशन नहीं देतीं। स्वचालित इस डिवाइस पर अधिकतम %lldp उपयोग करता है।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si applica al prossimo avvio di un video, e i siti non offrono sempre tutte le risoluzioni. Automatica usa fino a %lldp su questo dispositivo."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -452,6 +769,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "다음에 동영상을 재생할 때 적용되며, 사이트마다 모든 해상도를 제공하지는 않습니다. 자동은 이 기기에서 최대 %lldp를 사용합니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplica-se no próximo vídeo iniciado, e os sites nem sempre oferecem todas as resoluções. Automática usa até %lldp neste dispositivo."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Применится при следующем запуске видео; сайты не всегда предлагают все разрешения. «Автоматически» использует до %lldp на этом устройстве."
           }
         },
         "zh_CN": {
@@ -471,6 +800,12 @@
             "value": "Automatisch"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automática"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -483,6 +818,12 @@
             "value": "स्वचालित"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatica"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -493,6 +834,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "자동"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automática"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Автоматически"
           }
         },
         "zh_CN": {
@@ -512,6 +865,12 @@
             "value": "Entdecken"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Explorar"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -524,6 +883,12 @@
             "value": "ब्राउज़ करें"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sfoglia"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -534,6 +899,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "둘러보기"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Explorar"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обзор"
           }
         },
         "zh_CN": {
@@ -554,6 +931,12 @@
             "value": "Zwischengespeicherte Seiten gelöscht"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Páginas en caché borradas"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -566,6 +949,12 @@
             "value": "कैश किए गए पेज साफ़ किए गए"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pagine in cache eliminate"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -576,6 +965,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "캐시된 페이지 지움"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Páginas em cache limpas"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Кэш страниц очищен"
           }
         },
         "zh_CN": {
@@ -594,6 +995,12 @@
             "value": "Zwischengespeicherte Seiten enthalten kürzlich ermittelte Videostreams und Vorschaubilder."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las páginas en caché contienen los flujos de vídeo y las carátulas obtenidos recientemente."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -606,6 +1013,12 @@
             "value": "कैश किए गए पेजों में हाल ही में प्राप्त वीडियो स्ट्रीम और पोस्टर होते हैं।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le pagine in cache contengono i flussi video e le locandine ottenuti di recente."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -616,6 +1029,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "캐시된 페이지에는 최근에 확인한 동영상 스트림과 포스터가 들어 있습니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As páginas em cache contêm os fluxos de vídeo e as capas obtidos recentemente."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В кэше страниц хранятся недавно полученные видеопотоки и обложки."
           }
         },
         "zh_CN": {
@@ -636,6 +1061,12 @@
             "value": "Abbrechen"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancelar"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -648,6 +1079,12 @@
             "value": "रद्द करें"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Annulla"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -658,6 +1095,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "취소"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancelar"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отменить"
           }
         },
         "zh_CN": {
@@ -677,6 +1126,12 @@
             "value": "Kategorien"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Categorías"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -689,6 +1144,12 @@
             "value": "श्रेणियाँ"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Categorie"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -699,6 +1160,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "카테고리"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Categorias"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Категории"
           }
         },
         "zh_CN": {
@@ -718,6 +1191,12 @@
             "value": "Charts"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clasificaciones"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -730,6 +1209,12 @@
             "value": "चार्ट"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Classifiche"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -740,6 +1225,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "차트"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tabelas"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Чарты"
           }
         },
         "zh_CN": {
@@ -759,6 +1256,12 @@
             "value": "Chinesische Untertitel"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subtítulos en chino"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -771,6 +1274,12 @@
             "value": "चीनी उपशीर्षक"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sottotitoli in cinese"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -781,6 +1290,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "중국어 자막"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Legendas em chinês"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Китайские субтитры"
           }
         },
         "zh_CN": {
@@ -801,6 +1322,12 @@
             "value": "Löschen"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrar"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -813,6 +1340,12 @@
             "value": "साफ़ करें"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancella"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -823,6 +1356,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "지우기"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limpar"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Очистить"
           }
         },
         "zh_CN": {
@@ -843,6 +1388,12 @@
             "value": "Zwischengespeicherte Seiten löschen"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrar páginas en caché"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -855,6 +1406,12 @@
             "value": "कैश किए गए पेज साफ़ करें"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elimina pagine in cache"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -865,6 +1422,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "캐시된 페이지 지우기"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limpar páginas em cache"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Очистить кэш страниц"
           }
         },
         "zh_CN": {
@@ -885,6 +1454,12 @@
             "value": "Gesicherte Übersetzungen löschen"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrar traducciones guardadas"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -897,6 +1472,12 @@
             "value": "सहेजे गए अनुवाद हटाएँ"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elimina traduzioni salvate"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -907,6 +1488,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "저장된 번역 지우기"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limpar traduções guardadas"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить сохранённые переводы"
           }
         },
         "zh_CN": {
@@ -926,6 +1519,12 @@
             "value": "Sammlungen"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Colecciones"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -938,6 +1537,12 @@
             "value": "संग्रह"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Raccolte"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -948,6 +1553,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "컬렉션"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coleções"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Коллекции"
           }
         },
         "zh_CN": {
@@ -968,6 +1585,12 @@
             "value": "Kategorien konnten nicht geladen werden"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudieron cargar las categorías"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -980,6 +1603,12 @@
             "value": "श्रेणियाँ लोड नहीं हो सकीं"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile caricare le categorie"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -990,6 +1619,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "카테고리를 불러올 수 없음"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não foi possível carregar as categorias"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось загрузить категории"
           }
         },
         "zh_CN": {
@@ -1010,6 +1651,12 @@
             "value": "Videos konnten nicht geladen werden"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudieron cargar los vídeos"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -1022,6 +1669,12 @@
             "value": "वीडियो लोड नहीं हो सके"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile caricare i video"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -1032,6 +1685,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "동영상을 불러올 수 없음"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não foi possível carregar os vídeos"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось загрузить видео"
           }
         },
         "zh_CN": {
@@ -1051,6 +1716,12 @@
             "value": "Dunkel"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oscuro"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -1063,6 +1734,12 @@
             "value": "गहरा"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scuro"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -1073,6 +1750,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "다크"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escuro"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тёмное"
           }
         },
         "zh_CN": {
@@ -1093,6 +1782,12 @@
             "value": "Standard-Website"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sitio por omisión"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -1105,6 +1800,12 @@
             "value": "डिफ़ॉल्ट साइट"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sito predefinito"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -1115,6 +1816,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "기본 사이트"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Site predefinido"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сайт по умолчанию"
           }
         },
         "zh_CN": {
@@ -1135,6 +1848,12 @@
             "value": "Details"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detalles"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -1147,6 +1866,12 @@
             "value": "विवरण"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dettagli"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -1157,6 +1882,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "세부사항"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detalhes"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подробнее"
           }
         },
         "zh_CN": {
@@ -1177,6 +1914,12 @@
             "value": "Diagnose"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diagnóstico"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -1189,6 +1932,12 @@
             "value": "डायग्नोस्टिक्स"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diagnostica"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -1199,6 +1948,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "진단"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diagnóstico"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Диагностика"
           }
         },
         "zh_CN": {
@@ -1219,6 +1980,12 @@
             "value": "Fertig"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -1231,6 +1998,12 @@
             "value": "पूर्ण"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fine"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -1241,6 +2014,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "완료"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готово"
           }
         },
         "zh_CN": {
@@ -1260,6 +2045,12 @@
             "value": "Englische Untertitel"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subtítulos en inglés"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -1272,6 +2063,12 @@
             "value": "अंग्रेज़ी उपशीर्षक"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sottotitoli in inglese"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -1282,6 +2079,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "영어 자막"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Legendas em inglês"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Английские субтитры"
           }
         },
         "zh_CN": {
@@ -1301,6 +2110,12 @@
             "value": "Erkunden"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descubrir"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -1313,6 +2128,12 @@
             "value": "एक्सप्लोर करें"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esplora"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -1323,6 +2144,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "탐색"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descobrir"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Исследовать"
           }
         },
         "zh_CN": {
@@ -1343,6 +2176,12 @@
             "value": "Kategorien filtern"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtrar categorías"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -1355,6 +2194,12 @@
             "value": "श्रेणियाँ फ़िल्टर करें"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtra categorie"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -1365,6 +2210,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "카테고리 필터링"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtrar categorias"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Фильтр категорий"
           }
         },
         "zh_CN": {
@@ -1385,6 +2242,12 @@
             "value": "Videos nach Titel, Darsteller oder Stichwort finden."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Encuentra vídeos por título, intérprete o palabra clave."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -1397,6 +2260,12 @@
             "value": "शीर्षक, कलाकार या कीवर्ड से वीडियो खोजें।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trova video per titolo, interprete o parola chiave."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -1407,6 +2276,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "제목, 출연자 또는 키워드로 동영상을 찾습니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Encontre vídeos por título, intérprete ou palavra-chave."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ищите видео по названию, исполнителю или ключевому слову."
           }
         },
         "zh_CN": {
@@ -1427,6 +2308,12 @@
             "value": "GetSome"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GetSome"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -1439,6 +2326,12 @@
             "value": "GetSome"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GetSome"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -1446,6 +2339,18 @@
           }
         },
         "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GetSome"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GetSome"
+          }
+        },
+        "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "GetSome"
@@ -1469,6 +2374,12 @@
             "value": "Gast"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invitado"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -1481,6 +2392,12 @@
             "value": "अतिथि"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ospite"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -1491,6 +2408,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "게스트"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Convidado"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Гость"
           }
         },
         "zh_CN": {
@@ -1511,6 +2440,12 @@
             "value": "HD"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HD"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -1523,6 +2458,12 @@
             "value": "HD"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HD"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -1530,6 +2471,18 @@
           }
         },
         "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HD"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HD"
+          }
+        },
+        "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "HD"
@@ -1552,6 +2505,12 @@
             "value": "Angesagt"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Destacados"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -1564,6 +2523,12 @@
             "value": "लोकप्रिय"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In evidenza"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -1574,6 +2539,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "인기 급상승"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Em destaque"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Популярное"
           }
         },
         "zh_CN": {
@@ -1594,6 +2571,12 @@
             "value": "Ich bin 18 oder älter — fortfahren"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tengo 18 años o más: continuar"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -1606,6 +2589,12 @@
             "value": "मैं 18 वर्ष या उससे अधिक का हूँ — जारी रखें"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ho almeno 18 anni — continua"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -1616,6 +2605,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "18세 이상입니다 — 계속하기"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tenho 18 anos ou mais — continuar"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Мне есть 18 лет — продолжить"
           }
         },
         "zh_CN": {
@@ -1635,6 +2636,12 @@
             "value": "Neu hinzugefügt"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadidos recientemente"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -1647,6 +2654,12 @@
             "value": "अभी जोड़े गए"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiunti di recente"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -1657,6 +2670,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "최근 추가됨"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adicionados recentemente"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Недавно добавленные"
           }
         },
         "zh_CN": {
@@ -1677,6 +2702,12 @@
             "value": "Stichwörter"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Palabras clave"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -1689,6 +2720,12 @@
             "value": "कीवर्ड"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parole chiave"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -1699,6 +2736,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "키워드"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Palavras-chave"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ключевые слова"
           }
         },
         "zh_CN": {
@@ -1719,6 +2768,12 @@
             "value": "Sprache"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Idioma"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -1731,6 +2786,12 @@
             "value": "भाषा"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lingua"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -1741,6 +2802,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "언어"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Idioma"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Язык"
           }
         },
         "zh_CN": {
@@ -1761,6 +2834,12 @@
             "value": "Verlassen"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salir"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -1773,6 +2852,12 @@
             "value": "बाहर निकलें"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esci"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -1783,6 +2868,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "나가기"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sair"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выйти"
           }
         },
         "zh_CN": {
@@ -1802,6 +2899,12 @@
             "value": "Hell"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claro"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -1814,6 +2917,12 @@
             "value": "हल्का"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chiaro"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -1824,6 +2933,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "라이트"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claro"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Светлое"
           }
         },
         "zh_CN": {
@@ -1844,6 +2965,12 @@
             "value": "App sperren"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bloquear la app"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -1856,6 +2983,12 @@
             "value": "ऐप लॉक करें"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blocca l’app"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -1866,6 +2999,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "앱 잠그기"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bloquear a app"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Заблокировать приложение"
           }
         },
         "zh_CN": {
@@ -1886,6 +3031,12 @@
             "value": "Beim Sperren wird vor der Anzeige erneut nach der Altersbestätigung gefragt."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Al bloquear se pedirá de nuevo la confirmación de edad antes de mostrar nada."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -1898,6 +3049,12 @@
             "value": "लॉक करने पर कुछ भी दिखाने से पहले दोबारा आयु पुष्टि माँगी जाएगी।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bloccando, la conferma dell’età verrà richiesta di nuovo prima di mostrare qualsiasi contenuto."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -1908,6 +3065,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "잠그면 내용을 표시하기 전에 연령 확인을 다시 요청합니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ao bloquear, será pedida novamente a confirmação de idade antes de mostrar qualquer coisa."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "После блокировки подтверждение возраста будет запрошено снова, прежде чем что-либо показать."
           }
         },
         "zh_CN": {
@@ -1928,6 +3097,12 @@
             "value": "Maximale Qualität"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calidad máxima"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -1940,6 +3115,12 @@
             "value": "अधिकतम गुणवत्ता"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Qualità massima"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -1950,6 +3131,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "최대 화질"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Qualidade máxima"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Максимальное качество"
           }
         },
         "zh_CN": {
@@ -1969,6 +3162,12 @@
             "value": "Meistgesehen diesen Monat"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más vistos este mes"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -1981,6 +3180,12 @@
             "value": "इस महीने सर्वाधिक देखे गए"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Più visti questo mese"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -1991,6 +3196,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "이번 달 최다 조회"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mais vistos este mês"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Самые просматриваемые за месяц"
           }
         },
         "zh_CN": {
@@ -2010,6 +3227,12 @@
             "value": "Meistgesehen diese Woche"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más vistos esta semana"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -2022,6 +3245,12 @@
             "value": "इस सप्ताह सर्वाधिक देखे गए"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Più visti questa settimana"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -2032,6 +3261,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "이번 주 최다 조회"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mais vistos esta semana"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Самые просматриваемые за неделю"
           }
         },
         "zh_CN": {
@@ -2051,6 +3292,12 @@
             "value": "Meistgesehen heute"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más vistos hoy"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -2063,6 +3310,12 @@
             "value": "आज सर्वाधिक देखे गए"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Più visti oggi"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -2073,6 +3326,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "오늘 최다 조회"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mais vistos hoje"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Самые просматриваемые сегодня"
           }
         },
         "zh_CN": {
@@ -2092,6 +3357,12 @@
             "value": "Neuerscheinungen"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novedades"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -2104,6 +3375,12 @@
             "value": "नई रिलीज़"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nuove uscite"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -2114,6 +3391,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "새로운 출시작"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novidades"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Новинки"
           }
         },
         "zh_CN": {
@@ -2134,6 +3423,12 @@
             "value": "Kein Account. Alles bleibt auf diesem Gerät."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin cuenta. Todo se queda en este dispositivo."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -2146,6 +3441,12 @@
             "value": "कोई खाता नहीं। सब कुछ इसी डिवाइस पर रहता है।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessun account. Tutto resta su questo dispositivo."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -2156,6 +3457,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "계정이 없습니다. 모든 것이 이 기기에 남습니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem conta. Tudo fica neste dispositivo."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Без учётной записи. Всё остаётся на этом устройстве."
           }
         },
         "zh_CN": {
@@ -2176,6 +3489,12 @@
             "value": "Keine Kategorien"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin categorías"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -2188,6 +3507,12 @@
             "value": "कोई श्रेणी नहीं"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessuna categoria"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -2198,6 +3523,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "카테고리 없음"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem categorias"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет категорий"
           }
         },
         "zh_CN": {
@@ -2218,6 +3555,12 @@
             "value": "Keine Videos hier"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aquí no hay vídeos"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -2230,6 +3573,12 @@
             "value": "यहाँ कोई वीडियो नहीं"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessun video qui"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -2240,6 +3589,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "여기에 동영상이 없음"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não há vídeos aqui"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Здесь нет видео"
           }
         },
         "zh_CN": {
@@ -2259,6 +3620,12 @@
             "value": "Keine"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ninguno"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -2271,6 +3638,12 @@
             "value": "कोई नहीं"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessuno"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -2281,6 +3654,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "없음"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nenhum"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет"
           }
         },
         "zh_CN": {
@@ -2301,6 +3686,12 @@
             "value": "Noch nichts aufgezeichnet."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todavía no hay nada registrado."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -2313,6 +3704,12 @@
             "value": "अभी तक कुछ रिकॉर्ड नहीं हुआ।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non è ancora stato registrato nulla."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -2323,6 +3720,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "아직 기록된 내용이 없습니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ainda não há nada registado."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пока ничего не записано."
           }
         },
         "zh_CN": {
@@ -2343,6 +3752,12 @@
             "value": "Noch nichts gesichert"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todavía no has guardado nada"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -2355,6 +3770,12 @@
             "value": "अभी तक कुछ सहेजा नहीं गया"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non hai ancora salvato nulla"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -2365,6 +3786,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "아직 저장된 항목이 없음"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ainda não guardou nada"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пока ничего не сохранено"
           }
         },
         "zh_CN": {
@@ -2383,6 +3816,12 @@
             "value": "Aus – Titel und Stichwörter bleiben in der Sprache, in der sie hochgeladen wurden. Wenn du dies aktivierst, werden sie an Google Übersetzer gesendet – der einzige Teil dieser App, der weitergibt, was du dir ansiehst."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desactivado, así que los títulos y las palabras clave se mantienen en el idioma en que se subieron. Al activarlo se envían a Google Traductor: la única parte de esta app que comparte lo que estás viendo."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -2395,6 +3834,12 @@
             "value": "बंद है, इसलिए शीर्षक और कीवर्ड उसी भाषा में रहेंगे जिसमें वे अपलोड हुए थे। इसे चालू करने पर वे Google अनुवाद को भेजे जाते हैं — इस ऐप का यही एकमात्र हिस्सा है जो साझा करता है कि आप क्या देख रहे हैं।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disattivato, quindi titoli e parole chiave restano nella lingua in cui sono stati caricati. Attivandolo vengono inviati a Google Traduttore: l’unica parte di questa app che condivide ciò che stai guardando."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -2405,6 +3850,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "꺼져 있어 제목과 키워드가 업로드된 언어 그대로 표시됩니다. 이 기능을 켜면 Google 번역으로 전송됩니다. 이 앱에서 사용자가 보는 내용을 외부와 공유하는 유일한 기능입니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desativado, por isso os títulos e as palavras-chave mantêm-se no idioma em que foram carregados. Ao ativar, são enviados para o Google Tradutor — a única parte desta app que partilha o que está a ver."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выключено, поэтому названия и ключевые слова остаются на языке загрузки. Если включить, они отправляются в Google Переводчик — это единственная часть приложения, которая передаёт то, что вы смотрите."
           }
         },
         "zh_CN": {
@@ -2425,6 +3882,12 @@
             "value": "Wiedergeben"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reproducir"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -2437,6 +3900,12 @@
             "value": "चलाएँ"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Riproduci"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -2447,6 +3916,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "재생"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reproduzir"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Воспроизвести"
           }
         },
         "zh_CN": {
@@ -2467,6 +3948,12 @@
             "value": "Nächstes abspielen"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reproducir siguiente"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -2479,6 +3966,12 @@
             "value": "अगला चलाएँ"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Riproduci successivo"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -2489,6 +3982,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "다음 재생"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reproduzir seguinte"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Следующее видео"
           }
         },
         "zh_CN": {
@@ -2507,6 +4012,12 @@
             "value": "Wiedergabe"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reproducción"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -2519,6 +4030,12 @@
             "value": "प्लेबैक"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Riproduzione"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -2529,6 +4046,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "재생"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reprodução"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Воспроизведение"
           }
         },
         "zh_CN": {
@@ -2548,6 +4077,12 @@
             "value": "Beliebt"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Populares"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -2560,6 +4095,12 @@
             "value": "लोकप्रिय"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Popolari"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -2570,6 +4111,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "인기"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Populares"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Популярные"
           }
         },
         "zh_CN": {
@@ -2590,6 +4143,12 @@
             "value": "Bericht erstellen"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparar informe"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -2602,6 +4161,12 @@
             "value": "रिपोर्ट तैयार करें"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prepara resoconto"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -2612,6 +4177,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "보고서 준비"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparar relatório"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подготовить отчёт"
           }
         },
         "zh_CN": {
@@ -2632,6 +4209,12 @@
             "value": "Vorschau"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vista previa"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -2644,6 +4227,12 @@
             "value": "पूर्वावलोकन"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anteprima"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -2654,6 +4243,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "미리보기"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pré-visualização"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Предпросмотр"
           }
         },
         "zh_CN": {
@@ -2672,6 +4273,12 @@
             "value": "Datenschutz"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacidad"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -2684,6 +4291,12 @@
             "value": "गोपनीयता"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -2694,6 +4307,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "개인정보 보호"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacidade"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Конфиденциальность"
           }
         },
         "zh_CN": {
@@ -2713,6 +4338,12 @@
             "value": "Profil"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perfil"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -2725,6 +4356,12 @@
             "value": "प्रोफ़ाइल"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profilo"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -2735,6 +4372,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "프로필"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perfil"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Профиль"
           }
         },
         "zh_CN": {
@@ -2755,6 +4404,12 @@
             "value": "Profil & Einstellungen"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perfil y ajustes"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -2767,6 +4422,12 @@
             "value": "प्रोफ़ाइल और सेटिंग्ज़"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profilo e impostazioni"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -2777,6 +4438,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "프로필 및 설정"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perfil e definições"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Профиль и настройки"
           }
         },
         "zh_CN": {
@@ -2797,6 +4470,12 @@
             "value": "Profil und Einstellungen"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perfil y ajustes"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -2809,6 +4488,12 @@
             "value": "प्रोफ़ाइल और सेटिंग्ज़"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profilo e impostazioni"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -2819,6 +4504,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "프로필 및 설정"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perfil e definições"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Профиль и настройки"
           }
         },
         "zh_CN": {
@@ -2839,6 +4536,12 @@
             "value": "Letzte Anfragen"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solicitudes recientes"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -2851,6 +4554,12 @@
             "value": "हाल के अनुरोध"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Richieste recenti"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -2861,6 +4570,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "최근 요청"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pedidos recentes"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Последние запросы"
           }
         },
         "zh_CN": {
@@ -2881,6 +4602,12 @@
             "value": "Ähnliche"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Relacionados"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -2893,6 +4620,12 @@
             "value": "संबंधित"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Correlati"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -2903,6 +4636,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "관련 항목"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Relacionados"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Похожие"
           }
         },
         "zh_CN": {
@@ -2923,6 +4668,12 @@
             "value": "Alle entfernen"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar todo"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -2935,6 +4686,12 @@
             "value": "सभी हटाएँ"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rimuovi tutto"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -2945,6 +4702,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "모두 제거"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remover tudo"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить все"
           }
         },
         "zh_CN": {
@@ -2965,6 +4734,12 @@
             "value": "Alle gesicherten entfernen"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar todo lo guardado"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -2977,6 +4752,12 @@
             "value": "सहेजे गए सभी हटाएँ"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rimuovi tutti i salvati"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -2987,6 +4768,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "저장된 항목 모두 제거"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remover tudo o que está guardado"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить все сохранённые"
           }
         },
         "zh_CN": {
@@ -3007,6 +4800,12 @@
             "value": "Alle gesicherten Videos entfernen?"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Eliminar todos los vídeos guardados?"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -3019,6 +4818,12 @@
             "value": "सहेजे गए सभी वीडियो हटाएँ?"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rimuovere tutti i video salvati?"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -3029,6 +4834,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "저장된 동영상을 모두 제거하시겠습니까?"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remover todos os vídeos guardados?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить все сохранённые видео?"
           }
         },
         "zh_CN": {
@@ -3049,6 +4866,12 @@
             "value": "Sichern"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardar"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -3061,6 +4884,12 @@
             "value": "सहेजें"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salva"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -3071,6 +4900,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "저장"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardar"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сохранить"
           }
         },
         "zh_CN": {
@@ -3090,6 +4931,12 @@
             "value": "Gesichert"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardados"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -3102,6 +4949,12 @@
             "value": "सहेजे गए"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salvati"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -3112,6 +4965,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "저장됨"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardados"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сохранённые"
           }
         },
         "zh_CN": {
@@ -3132,6 +4997,12 @@
             "value": "Gesicherte Videos"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vídeos guardados"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -3144,6 +5015,12 @@
             "value": "सहेजे गए वीडियो"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Video salvati"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -3154,6 +5031,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "저장된 동영상"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vídeos guardados"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сохранённые видео"
           }
         },
         "zh_CN": {
@@ -3173,6 +5062,12 @@
             "value": "Suchen"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -3185,6 +5080,12 @@
             "value": "खोजें"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cerca"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -3195,6 +5096,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "검색"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pesquisar"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поиск"
           }
         },
         "zh_CN": {
@@ -3215,6 +5128,12 @@
             "value": "Videos suchen"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar vídeos"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -3227,6 +5146,12 @@
             "value": "वीडियो खोजें"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cerca video"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -3237,6 +5162,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "동영상 검색"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pesquisar vídeos"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поиск видео"
           }
         },
         "zh_CN": {
@@ -3257,6 +5194,12 @@
             "value": "Bericht teilen"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compartir informe"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -3269,6 +5212,12 @@
             "value": "रिपोर्ट साझा करें"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Condividi resoconto"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -3279,6 +5228,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "보고서 공유"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Partilhar relatório"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поделиться отчётом"
           }
         },
         "zh_CN": {
@@ -3299,6 +5260,12 @@
             "value": "Status"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estado"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -3311,6 +5278,12 @@
             "value": "स्थिति"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stato"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -3321,6 +5294,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "상태"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estado"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Состояние"
           }
         },
         "zh_CN": {
@@ -3341,6 +5326,12 @@
             "value": "Speicher"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Almacenamiento"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -3353,6 +5344,12 @@
             "value": "स्टोरेज"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archiviazione"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -3363,6 +5360,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "저장 공간"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Armazenamento"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Хранилище"
           }
         },
         "zh_CN": {
@@ -3382,6 +5391,12 @@
             "value": "Studio"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estudio"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -3394,6 +5409,12 @@
             "value": "स्टूडियो"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Studio"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -3404,6 +5425,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "스튜디오"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estúdio"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Студия"
           }
         },
         "zh_CN": {
@@ -3424,6 +5457,12 @@
             "value": "Tippe bei einem Video auf „Sichern“, um es hier zu behalten."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toca Guardar en un vídeo para conservarlo aquí."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -3436,6 +5475,12 @@
             "value": "किसी वीडियो पर सहेजें टैप करें ताकि वह यहाँ रहे।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tocca Salva su un video per conservarlo qui."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -3446,6 +5491,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "동영상에서 저장을 탭하면 여기에 보관됩니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toque em Guardar num vídeo para o manter aqui."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нажмите «Сохранить» на видео, чтобы оставить его здесь."
           }
         },
         "zh_CN": {
@@ -3466,6 +5523,12 @@
             "value": "Das bedeutet meist, dass die Website ihr Layout geändert hat, und nicht, dass hier etwas defekt ist. Beim Teilen dieses Berichts wird die Seite selbst mitgesendet."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eso suele significar que el sitio cambió su diseño, no que aquí haya algo mal. Al compartir este informe se incluye la propia página."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -3478,6 +5541,12 @@
             "value": "इसका आमतौर पर अर्थ है कि साइट ने अपना लेआउट बदला है, न कि यहाँ कुछ गड़बड़ है। इस रिपोर्ट को साझा करने पर पेज भी शामिल होता है।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Di solito significa che il sito ha cambiato l’impaginazione, non che ci sia qualcosa che non va qui. Condividendo questo resoconto viene inclusa anche la pagina."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -3488,6 +5557,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "이는 대개 이 앱에 문제가 있는 것이 아니라 사이트가 레이아웃을 변경했다는 뜻입니다. 이 보고서를 공유하면 페이지 자체도 포함됩니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Isso normalmente significa que o site mudou o esquema, não que algo esteja errado aqui. Partilhar este relatório inclui a própria página."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обычно это значит, что сайт изменил вёрстку, а не что здесь что-то не так. При отправке этого отчёта включается и сама страница."
           }
         },
         "zh_CN": {
@@ -3508,6 +5589,12 @@
             "value": "Das ist alles."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esto es todo."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -3520,6 +5607,12 @@
             "value": "बस इतना ही।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non c’è altro."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -3530,6 +5623,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "이것이 전부입니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "É tudo."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Это всё."
           }
         },
         "zh_CN": {
@@ -3549,6 +5654,12 @@
             "value": "Die am besten bewerteten Videos der Website."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los vídeos mejor valorados del sitio."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -3561,6 +5672,12 @@
             "value": "साइट पर सर्वश्रेष्ठ रेटिंग वाले वीडियो।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I video con la valutazione più alta del sito."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -3571,6 +5688,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "사이트에서 평점이 가장 높은 동영상."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os vídeos com melhor classificação do site."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Видео с самым высоким рейтингом на сайте."
           }
         },
         "zh_CN": {
@@ -3590,6 +5719,12 @@
             "value": "Die Startseite, den Tag über aktualisiert."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La portada, actualizada a lo largo del día."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -3602,6 +5737,12 @@
             "value": "मुख पृष्ठ, दिन भर ताज़ा होता रहता है।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La pagina principale, aggiornata nel corso della giornata."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -3612,6 +5753,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "하루 종일 새로 고쳐지는 첫 페이지."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A página inicial, atualizada ao longo do dia."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Главная страница, обновляется в течение дня."
           }
         },
         "zh_CN": {
@@ -3631,6 +5784,12 @@
             "value": "Die meistgesehenen Videos der letzten vierundzwanzig Stunden."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los vídeos más vistos de las últimas veinticuatro horas."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -3643,6 +5802,12 @@
             "value": "पिछले चौबीस घंटों में सर्वाधिक देखे गए वीडियो।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I video più visti nelle ultime ventiquattro ore."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -3653,6 +5818,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "지난 24시간 동안 가장 많이 시청된 동영상."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os vídeos mais vistos das últimas vinte e quatro horas."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Самые просматриваемые видео за последние двадцать четыре часа."
           }
         },
         "zh_CN": {
@@ -3672,6 +5849,12 @@
             "value": "Die meistgesehenen Videos des vergangenen Tages."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los vídeos más vistos del último día."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -3684,6 +5867,12 @@
             "value": "पिछले दिन के सर्वाधिक देखे गए वीडियो।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I video più visti dell’ultimo giorno."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -3694,6 +5883,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "지난 하루 동안 가장 많이 시청된 동영상."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os vídeos mais vistos do último dia."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Самые просматриваемые видео за последний день."
           }
         },
         "zh_CN": {
@@ -3713,6 +5914,12 @@
             "value": "Die meistgesehenen Videos des vergangenen Monats."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los vídeos más vistos del último mes."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -3725,6 +5932,12 @@
             "value": "पिछले महीने के सर्वाधिक देखे गए वीडियो।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I video più visti dell’ultimo mese."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -3735,6 +5948,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "지난 한 달 동안 가장 많이 시청된 동영상."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os vídeos mais vistos do último mês."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Самые просматриваемые видео за последний месяц."
           }
         },
         "zh_CN": {
@@ -3754,6 +5979,12 @@
             "value": "Die meistgesehenen Videos der letzten sieben Tage."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los vídeos más vistos de los últimos siete días."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -3766,6 +5997,12 @@
             "value": "पिछले सात दिनों के सर्वाधिक देखे गए वीडियो।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I video più visti degli ultimi sette giorni."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -3776,6 +6013,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "지난 7일 동안 가장 많이 시청된 동영상."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os vídeos mais vistos dos últimos sete dias."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Самые просматриваемые видео за последние семь дней."
           }
         },
         "zh_CN": {
@@ -3795,6 +6044,12 @@
             "value": "Die neuesten Uploads, in der Reihenfolge ihres Eingangs."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las subidas más recientes, en el orden en que llegaron."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -3807,6 +6062,12 @@
             "value": "नवीनतम अपलोड, आने के क्रम में।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I caricamenti più recenti, nell’ordine in cui sono arrivati."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -3817,6 +6078,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "가장 최근 업로드를 도착한 순서대로."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os carregamentos mais recentes, pela ordem de chegada."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Самые новые загрузки в порядке поступления."
           }
         },
         "zh_CN": {
@@ -3837,6 +6110,12 @@
             "value": "Der Bericht führt auf, was die App bei jeder Website angefragt hat und was zurückkam."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El informe indica qué pidió la app a cada sitio y qué recibió."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -3849,6 +6128,12 @@
             "value": "रिपोर्ट में दर्ज है कि ऐप ने हर साइट से क्या माँगा और क्या वापस आया।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il resoconto elenca ciò che l’app ha chiesto a ogni sito e ciò che ha ricevuto."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -3859,6 +6144,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "보고서에는 앱이 각 사이트에 요청한 내용과 돌아온 내용이 나열됩니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O relatório indica o que a app pediu a cada site e o que recebeu."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В отчёте перечислено, что приложение запросило у каждого сайта и что получило в ответ."
           }
         },
         "zh_CN": {
@@ -3879,6 +6176,12 @@
             "value": "Die Website, mit der „Jetzt ansehen“ startet. Alle Websites bleiben unter „Entdecken“ verfügbar."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El sitio con el que empieza Ver ahora. Todos los sitios siguen disponibles en Explorar."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -3891,6 +6194,12 @@
             "value": "वह साइट जिससे “अभी देखें” शुरू होता है। सभी साइटें ब्राउज़ में उपलब्ध रहती हैं।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il sito con cui si apre Guarda ora. Tutti i siti restano disponibili in Sfoglia."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -3901,6 +6210,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "지금 보기에서 먼저 표시할 사이트입니다. 모든 사이트는 둘러보기에서 계속 이용할 수 있습니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O site com que Ver agora começa. Todos os sites continuam disponíveis em Explorar."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сайт, с которого начинается «Смотреть сейчас». Все сайты остаются доступны в разделе «Обзор»."
           }
         },
         "zh_CN": {
@@ -3920,6 +6241,12 @@
             "value": "Die Website hat eine Seite zurückgegeben, die diese App nicht lesen kann."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El sitio devolvió una página que esta app no puede leer."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -3932,6 +6259,12 @@
             "value": "साइट ने ऐसा पेज लौटाया जिसे यह ऐप नहीं पढ़ सकता।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il sito ha restituito una pagina che questa app non riesce a leggere."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -3942,6 +6275,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "사이트가 이 앱이 읽을 수 없는 페이지를 반환했습니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O site devolveu uma página que esta app não consegue ler."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сайт вернул страницу, которую это приложение не может прочитать."
           }
         },
         "zh_CN": {
@@ -3961,6 +6306,12 @@
             "value": "Die Website hat einen Fehler zurückgegeben (%lld)."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El sitio devolvió un error (%lld)."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -3973,6 +6324,12 @@
             "value": "साइट ने त्रुटि लौटाई (%lld)।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il sito ha restituito un errore (%lld)."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -3983,6 +6340,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "사이트에서 오류를 반환했습니다 (%lld)."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O site devolveu um erro (%lld)."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сайт вернул ошибку (%lld)."
           }
         },
         "zh_CN": {
@@ -4001,6 +6370,12 @@
             "value": "Der Übersetzungsdienst hat mit %lld geantwortet."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El servicio de traducción respondió %lld."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -4013,6 +6388,12 @@
             "value": "अनुवाद सेवा ने %lld के साथ उत्तर दिया।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il servizio di traduzione ha risposto %lld."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -4023,6 +6404,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "번역 서비스가 %lld(으)로 응답했습니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O serviço de tradução respondeu %lld."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Служба перевода ответила %lld."
           }
         },
         "zh_CN": {
@@ -4041,6 +6434,12 @@
             "value": "Der Übersetzungsdienst drosselt dieses Gerät. Versuche es später erneut."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El servicio de traducción está limitando las solicitudes de este dispositivo. Inténtalo más tarde."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -4053,6 +6452,12 @@
             "value": "अनुवाद सेवा इस डिवाइस की दर सीमित कर रही है। बाद में पुनः प्रयास करें।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il servizio di traduzione sta limitando le richieste di questo dispositivo. Riprova più tardi."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -4063,6 +6468,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "번역 서비스가 이 기기의 요청 속도를 제한하고 있습니다. 나중에 다시 시도하십시오."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O serviço de tradução está a limitar os pedidos deste dispositivo. Tente mais tarde."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Служба перевода ограничивает запросы с этого устройства. Повторите попытку позже."
           }
         },
         "zh_CN": {
@@ -4087,6 +6504,12 @@
             "value": "The translation service returned %1$lld results for %2$lld items."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El servicio de traducción devolvió %lld resultados para %lld elementos."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -4099,6 +6522,12 @@
             "value": "अनुवाद सेवा ने %lld आइटम के लिए %lld परिणाम लौटाए।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il servizio di traduzione ha restituito %lld risultati per %lld elementi."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -4109,6 +6538,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "번역 서비스가 %lld개 항목에 대해 %lld개의 결과를 반환했습니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O serviço de tradução devolveu %lld resultados para %lld itens."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Служба перевода вернула %lld результатов для %lld элементов."
           }
         },
         "zh_CN": {
@@ -4127,6 +6568,12 @@
             "value": "Der Übersetzungsdienst hat etwas Unlesbares gesendet."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El servicio de traducción envió algo ilegible."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -4139,6 +6586,12 @@
             "value": "अनुवाद सेवा ने कुछ अपठनीय भेजा।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il servizio di traduzione ha inviato qualcosa di illeggibile."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -4149,6 +6602,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "번역 서비스가 읽을 수 없는 응답을 보냈습니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O serviço de tradução enviou algo ilegível."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Служба перевода прислала нечитаемый ответ."
           }
         },
         "zh_CN": {
@@ -4168,6 +6633,12 @@
             "value": "Die Videos, die gerade alle ansehen, nach Aufrufen sortiert."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los vídeos que todo el mundo está viendo ahora mismo, ordenados por visualizaciones."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -4180,6 +6651,12 @@
             "value": "अभी जो वीडियो सब देख रहे हैं, व्यू के अनुसार क्रमित।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I video che tutti stanno guardando in questo momento, in ordine di visualizzazioni."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -4190,6 +6667,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "지금 모두가 보고 있는 동영상을 조회수순으로."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os vídeos que toda a gente está a ver neste momento, ordenados por visualizações."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Видео, которые смотрят прямо сейчас, по числу просмотров."
           }
         },
         "zh_CN": {
@@ -4208,6 +6697,12 @@
             "value": "Es gab nichts zu übersetzen."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No había nada que traducir."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -4220,6 +6715,12 @@
             "value": "अनुवाद करने के लिए कुछ नहीं था।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non c’era nulla da tradurre."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -4230,6 +6731,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "번역할 내용이 없었습니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não havia nada para traduzir."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переводить было нечего."
           }
         },
         "zh_CN": {
@@ -4249,6 +6762,12 @@
             "value": "In dieser App gibt es keine Website namens „%@“."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En esta app no hay ningún sitio llamado «%@»."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -4261,6 +6780,12 @@
             "value": "इस ऐप में “%@” नाम की कोई साइट नहीं है।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In questa app non esiste alcun sito chiamato “%@”."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -4271,6 +6796,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "이 앱에 \"%@\"(이)라는 사이트가 없습니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não existe nenhum site chamado “%@” nesta app."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В этом приложении нет сайта с названием «%@»."
           }
         },
         "zh_CN": {
@@ -4289,6 +6826,12 @@
             "value": "Diese App zeigt Inhalte für Erwachsene von %@."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta app muestra contenido para adultos de %@."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -4301,6 +6844,12 @@
             "value": "यह ऐप %@ से वयस्क सामग्री दिखाता है।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questa app mostra contenuti per adulti da %@."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -4311,6 +6860,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "이 앱은 %@의 성인용 콘텐츠를 표시합니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta app mostra conteúdo para adultos de %@."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Это приложение показывает контент для взрослых с %@."
           }
         },
         "zh_CN": {
@@ -4331,6 +6892,12 @@
             "value": "Damit werden %lld gesicherte Videos von diesem Gerät entfernt. Das lässt sich nicht rückgängig machen."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esto elimina %lld vídeos guardados de este dispositivo. No se puede deshacer."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -4343,6 +6910,12 @@
             "value": "इससे इस डिवाइस से %lld सहेजे गए वीडियो हट जाएँगे। इसे पूर्ववत नहीं किया जा सकता।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questa operazione elimina %lld video salvati da questo dispositivo. Non può essere annullata."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -4353,6 +6926,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "이 기기에서 저장된 동영상 %lld개를 지웁니다. 이 작업은 취소할 수 없습니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Isto elimina %lld vídeos guardados deste dispositivo. Não pode ser anulado."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Будет удалено %lld сохранённых видео с этого устройства. Отменить это действие нельзя."
           }
         },
         "zh_CN": {
@@ -4373,6 +6958,12 @@
             "value": "Diese Sammlung ist nicht verfügbar"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta colección no está disponible"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -4385,6 +6976,12 @@
             "value": "यह संग्रह उपलब्ध नहीं है"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questa raccolta non è disponibile"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -4395,6 +6992,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "이 컬렉션은 사용할 수 없음"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta coleção não está disponível"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Эта коллекция недоступна"
           }
         },
         "zh_CN": {
@@ -4414,6 +7023,12 @@
             "value": "Für dieses Video gibt es keinen abspielbaren Stream."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este vídeo no tiene ningún flujo que reproducir."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -4426,6 +7041,12 @@
             "value": "इस वीडियो के लिए चलाने योग्य कोई स्ट्रीम नहीं है।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questo video non ha alcun flusso da riprodurre."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -4436,6 +7057,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "이 동영상에는 재생할 스트림이 없습니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este vídeo não tem nenhum fluxo para reproduzir."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "У этого видео нет потока для воспроизведения."
           }
         },
         "zh_CN": {
@@ -4456,6 +7089,12 @@
             "value": "Die Website dieses Videos ist nicht mehr verfügbar"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El sitio de este vídeo ya no está disponible"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -4468,6 +7107,12 @@
             "value": "इस वीडियो की साइट अब उपलब्ध नहीं है"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il sito di questo video non è più disponibile"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -4478,6 +7123,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "이 동영상의 사이트는 더 이상 사용할 수 없음"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O site deste vídeo já não está disponível"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сайт этого видео больше недоступен"
           }
         },
         "zh_CN": {
@@ -4496,6 +7153,12 @@
             "value": "Titel und Stichwörter werden zum Übersetzen an Google Übersetzer gesendet. Text, der bereits auf %@ ist, verlässt dieses Gerät nie."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los títulos y las palabras clave se envían a Google Traductor para traducirlos. El texto que ya está en %@ nunca sale de este dispositivo."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -4508,6 +7171,12 @@
             "value": "शीर्षक और कीवर्ड अनुवाद के लिए Google अनुवाद को भेजे जाते हैं। जो पाठ पहले से %@ में है, वह कभी इस डिवाइस से बाहर नहीं जाता।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Titoli e parole chiave vengono inviati a Google Traduttore per la traduzione. Il testo già in %@ non lascia mai questo dispositivo."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -4518,6 +7187,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "제목과 키워드는 번역을 위해 Google 번역으로 전송됩니다. 이미 %@(으)로 된 텍스트는 이 기기를 벗어나지 않습니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os títulos e as palavras-chave são enviados para o Google Tradutor. O texto que já está em %@ nunca sai deste dispositivo."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Названия и ключевые слова отправляются в Google Переводчик. Текст, уже написанный на %@, никогда не покидает это устройство."
           }
         },
         "zh_CN": {
@@ -4537,6 +7218,12 @@
             "value": "Titel nach Erscheinungsdatum."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Títulos por fecha de estreno."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -4549,6 +7236,12 @@
             "value": "रिलीज़ तिथि के अनुसार शीर्षक।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Titoli per data di uscita."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -4559,6 +7252,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "출시일순 타이틀."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Títulos por data de lançamento."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тайтлы по дате выхода."
           }
         },
         "zh_CN": {
@@ -4578,6 +7283,12 @@
             "value": "Titel mit chinesischen Untertiteln."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Títulos con subtítulos en chino."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -4590,6 +7301,12 @@
             "value": "चीनी उपशीर्षक वाले शीर्षक।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Titoli con sottotitoli in cinese."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -4600,6 +7317,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "중국어 자막이 있는 타이틀."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Títulos com legendas em chinês."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тайтлы с китайскими субтитрами."
           }
         },
         "zh_CN": {
@@ -4619,6 +7348,12 @@
             "value": "Titel mit englischen Untertiteln."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Títulos con subtítulos en inglés."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -4631,6 +7366,12 @@
             "value": "अंग्रेज़ी उपशीर्षक वाले शीर्षक।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Titoli con sottotitoli in inglese."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -4641,6 +7382,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "영어 자막이 있는 타이틀."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Títulos com legendas em inglês."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тайтлы с английскими субтитрами."
           }
         },
         "zh_CN": {
@@ -4660,6 +7413,12 @@
             "value": "Bestbewertet"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mejor valorados"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -4672,6 +7431,12 @@
             "value": "सर्वोच्च रेटेड"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Più votati"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -4682,6 +7447,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "최고 평점"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Melhor classificados"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "С высшим рейтингом"
           }
         },
         "zh_CN": {
@@ -4701,6 +7478,12 @@
             "value": "Top diesen Monat"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Top del mes"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -4713,6 +7496,12 @@
             "value": "इस महीने के शीर्ष"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Top del mese"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -4723,6 +7512,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "이번 달 톱"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Top do mês"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Топ месяца"
           }
         },
         "zh_CN": {
@@ -4742,6 +7543,12 @@
             "value": "Top diese Woche"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Top de la semana"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -4754,6 +7561,12 @@
             "value": "इस सप्ताह के शीर्ष"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Top della settimana"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -4764,6 +7577,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "이번 주 톱"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Top da semana"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Топ недели"
           }
         },
         "zh_CN": {
@@ -4783,6 +7608,12 @@
             "value": "Top heute"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Top de hoy"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -4795,6 +7626,12 @@
             "value": "आज के शीर्ष"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Top di oggi"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -4805,6 +7642,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "오늘의 톱"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Top de hoje"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Топ дня"
           }
         },
         "zh_CN": {
@@ -4825,6 +7674,12 @@
             "value": "Auf %@ übersetzen"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Traducir al %@"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -4837,6 +7692,12 @@
             "value": "%@ में अनुवाद करें"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Traduci in %@"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -4847,6 +7708,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@(으)로 번역"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Traduzir para %@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переводить на %@"
           }
         },
         "zh_CN": {
@@ -4867,6 +7740,12 @@
             "value": "Wird übersetzt …"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Traduciendo…"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -4879,6 +7758,12 @@
             "value": "अनुवाद हो रहा है…"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Traduzione…"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -4889,6 +7774,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "번역 중…"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A traduzir…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перевод…"
           }
         },
         "zh_CN": {
@@ -4909,6 +7806,12 @@
             "value": "Im Trend"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tendencias"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -4921,6 +7824,12 @@
             "value": "ट्रेंडिंग"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Di tendenza"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -4931,6 +7840,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "인기 급상승"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tendências"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В тренде"
           }
         },
         "zh_CN": {
@@ -4951,6 +7872,12 @@
             "value": "Erneut versuchen"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reintentar"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -4963,6 +7890,12 @@
             "value": "पुनः प्रयास करें"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Riprova"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -4973,6 +7906,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "다시 시도"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tentar novamente"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повторить"
           }
         },
         "zh_CN": {
@@ -4993,6 +7938,12 @@
             "value": "Nicht verfügbar"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No disponible"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -5005,6 +7956,12 @@
             "value": "अनुपलब्ध"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non disponibile"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -5015,6 +7972,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "사용 불가"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indisponível"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Недоступно"
           }
         },
         "zh_CN": {
@@ -5034,6 +8003,12 @@
             "value": "Unzensiert"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin censura"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -5046,6 +8021,12 @@
             "value": "बिना सेंसर"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Senza censura"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -5056,6 +8037,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "무수정"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem censura"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Без цензуры"
           }
         },
         "zh_CN": {
@@ -5075,6 +8068,12 @@
             "value": "Unzensierte Veröffentlichungen."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estrenos sin censura."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -5087,6 +8086,12 @@
             "value": "बिना सेंसर रिलीज़।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uscite senza censura."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -5097,6 +8102,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "무수정 출시작."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lançamentos sem censura."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Релизы без цензуры."
           }
         },
         "zh_CN": {
@@ -5116,6 +8133,12 @@
             "value": "Als Nächstes"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A continuación"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -5128,6 +8151,12 @@
             "value": "अगला"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Da vedere dopo"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -5138,6 +8167,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "다음 항목"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A seguir"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Далее"
           }
         },
         "zh_CN": {
@@ -5157,6 +8198,12 @@
             "value": "Bis zu %lldp auf diesem Gerät."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hasta %lldp en este dispositivo."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -5169,6 +8216,12 @@
             "value": "इस डिवाइस पर अधिकतम %lldp।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fino a %lldp su questo dispositivo."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -5179,6 +8232,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "이 기기에서 최대 %lldp."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Até %lldp neste dispositivo."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "До %lldp на этом устройстве."
           }
         },
         "zh_CN": {
@@ -5198,6 +8263,12 @@
             "value": "Uploads von Accounts, die die Website verifiziert hat."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subidas de cuentas verificadas por el sitio."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -5210,6 +8281,12 @@
             "value": "साइट द्वारा सत्यापित खातों से अपलोड।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Caricamenti da account verificati dal sito."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -5220,6 +8297,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "사이트가 인증한 계정의 업로드."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carregamentos de contas verificadas pelo site."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Загрузки с аккаунтов, проверенных сайтом."
           }
         },
         "zh_CN": {
@@ -5239,6 +8328,12 @@
             "value": "Verifiziert"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verificados"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -5251,6 +8346,12 @@
             "value": "सत्यापित"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verificati"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -5261,6 +8362,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "인증됨"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verificados"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверенные"
           }
         },
         "zh_CN": {
@@ -5281,6 +8394,12 @@
             "value": "Version"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Versión"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -5293,6 +8412,12 @@
             "value": "संस्करण"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Versione"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -5303,6 +8428,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "버전"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Versão"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Версия"
           }
         },
         "zh_CN": {
@@ -5322,6 +8459,12 @@
             "value": "Jetzt ansehen"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver ahora"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -5334,6 +8477,12 @@
             "value": "अभी देखें"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guarda ora"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -5344,6 +8493,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "지금 보기"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver agora"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Смотреть сейчас"
           }
         },
         "zh_CN": {
@@ -5363,6 +8524,12 @@
             "value": "Wird gerade angesehen"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Viendo ahora"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -5375,6 +8542,12 @@
             "value": "अभी देखे जा रहे"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In riproduzione ora"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -5385,6 +8558,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "지금 시청 중"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A ver agora"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Смотрят сейчас"
           }
         },
         "zh_CN": {
@@ -5404,6 +8589,12 @@
             "value": "Was andere gerade geöffnet haben."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lo que otras personas tienen abierto en este momento."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -5416,6 +8607,12 @@
             "value": "अभी दूसरे लोग जो खोले हुए हैं।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ciò che altre persone hanno aperto in questo momento."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -5426,6 +8623,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "다른 사람들이 지금 열어 둔 항목."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O que outras pessoas têm aberto neste momento."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "То, что другие открыли прямо сейчас."
           }
         },
         "zh_CN": {
@@ -5445,6 +8654,12 @@
             "value": "Was gerade angesagt ist."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lo que está de moda ahora mismo."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -5457,6 +8672,12 @@
             "value": "अभी जो लोकप्रिय है।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ciò che è di tendenza in questo momento."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -5467,6 +8688,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "지금 인기 있는 항목."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O que está em destaque neste momento."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "То, что популярно прямо сейчас."
           }
         },
         "zh_CN": {
@@ -5487,6 +8720,12 @@
             "value": "Du musst mindestens 18 Jahre alt sein oder das in deinem Land geltende Volljährigkeitsalter erreicht haben, um fortzufahren. Alle Videos werden von der Quell-Website gestreamt."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Debes tener al menos 18 años, o la mayoría de edad de tu lugar de residencia, para continuar. Todos los vídeos se reproducen desde el sitio de origen."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -5499,6 +8738,12 @@
             "value": "जारी रखने के लिए आपकी आयु कम से कम 18 वर्ष होनी चाहिए, या आपके क्षेत्र की वयस्कता आयु। सभी वीडियो स्रोत साइट से स्ट्रीम होते हैं।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Devi avere almeno 18 anni, o la maggiore età del luogo in cui vivi, per continuare. Tutti i video vengono trasmessi dal sito di origine."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -5509,6 +8754,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "계속하려면 만 18세 이상이거나 거주 지역의 성년 연령에 도달해야 합니다. 모든 동영상은 출처 사이트에서 스트리밍됩니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tem de ter pelo menos 18 anos, ou a maioridade do local onde vive, para continuar. Todos os vídeos são transmitidos a partir do site de origem."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Чтобы продолжить, вам должно быть не менее 18 лет или больше — в зависимости от возраста совершеннолетия в вашей стране. Все видео транслируются с сайта-источника."
           }
         },
         "zh_CN": {
@@ -5528,6 +8785,12 @@
             "value": "„%@“ ist auf dieser Website nicht verfügbar."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%@» no está disponible en este sitio."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
@@ -5540,6 +8803,12 @@
             "value": "“%@” इस साइट पर उपलब्ध नहीं है।"
           }
         },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” non è disponibile su questo sito."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -5550,6 +8819,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "\"%@\"은(는) 이 사이트에서 사용할 수 없습니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” não está disponível neste site."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%@» недоступно на этом сайте."
           }
         },
         "zh_CN": {
