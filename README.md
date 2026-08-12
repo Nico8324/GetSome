@@ -48,7 +48,7 @@ flowchart TD
     end
     subgraph state [State]
         B["FeedStore<br/><i>paging, per-feed state</i>"]
-        T["TranslationStore<br/><i>on-device translation</i>"]
+        T["TranslationStore<br/><i>translation of site text</i>"]
     end
     subgraph net [Networking]
         C["ContentClient<br/><i>requests · caching · stream choice</i>"]
@@ -89,7 +89,7 @@ GetSome/
 │   ├── Networking/       ContentClient, RequestLog
 │   ├── Data/             Video, VideoID, SavedVideo
 │   ├── FeedStore         paging and per-feed state
-│   └── TranslationStore  on-device translation of site text
+│   └── TranslationStore  translation of site text
 ├── Views/                screens and cards
 ├── Player/               PlayerModel and the platform player wrappers
 └── SharePlay/            group watching
@@ -227,39 +227,41 @@ parsing — and `Mat6TubeSource` is the only file that needs fixing.
 </details>
 
 <details>
-<summary><b>Translation</b> — on device, opt-in</summary>
+<summary><b>Translation</b> — online, opt-in</summary>
 
 <br>
 
 Sites publish titles and keywords in whatever language a video was uploaded in.
-`TranslationStore` translates them into the device's language with Apple's
-Translation framework. Nothing leaves the device, and it is **off until asked for**,
-because each language costs a real download.
+`TranslationStore` translates them into the device's language. It is **off until
+asked for**, because turning it on sends what you're browsing to a third party.
 
 - Views call `translator.text(for:)`, which answers immediately with the original
   and queues a miss. The queue is `@ObservationIgnored`, so queueing from inside a
   view's body doesn't invalidate the view that's drawing.
 - Misses are grouped by detected language (`NLLanguageRecognizer`, weighted by a
   prior — without one it reads Russian titles as Kazakh with full confidence, and
-  nothing ever matches an installed pair).
-- A batch builds its own `TranslationSession(installedSource:target:)` inside one
-  `nonisolated` function. The session and its `Request` aren't `Sendable`, so both
-  are created and consumed there; only strings come back.
+  the group then goes out labelled as the wrong language).
+- Each group becomes one request of up to 24 strings. `GoogleTranslator` joins them
+  with newlines and splits the reply back apart.
 - Results land in one write per batch — a page of cards redraws once rather than
   once per title — and persist to Application Support, capped.
 
-**Why one `translationTask` remains.** A directly built session reports
-`canRequestDownloads == false` and throws `notInstalled` for a language the device
-lacks: it can translate, but it can't ask for a download. Only a session vended by
-SwiftUI's `translationTask` can present the system download UI, so `ContentView`
-hosts exactly one, used for nothing else. Its closure is `@Sendable` so it doesn't
-inherit main-actor isolation, which would make the non-`Sendable` session a
-"sending" error.
+**Detection stays on device**, and that isn't only a performance choice: text
+already in the device's language is dropped before any request, so it is never
+sent anywhere.
 
-**Downloads.** A language must be downloaded before it can be translated, and only
-a person can approve that — there is no way to fetch one silently, and no way to
-reach Apple's server-side translation (the path Safari uses). The app asks once per
-language, at the moment it first meets one.
+**Why batches must not misalign.** Results are paired back to originals by index,
+so a reply with the wrong number of lines would caption videos with each other's
+titles. Two things guard it: newlines are stripped from every string on the way out
+(a title containing one would come back as two lines), and a reply whose line count
+doesn't match the request is thrown away rather than used.
+
+**The service is a scraped endpoint, not an API.** `translate_a` is what Google's
+own web widget calls — no key, no account, which is why it's here: every free
+alternative either requires a key now or has gone offline. It can change shape or
+start refusing without notice, so it sits behind a `TranslationService` protocol
+and swapping it is one new type. Rate limiting is treated as temporary — the batch
+goes back in the queue rather than being abandoned.
 
 Translated: titles, keywords on cards and detail pages, and keyword chips. A chip
 still *searches* with the original word, since a site only knows its own vocabulary.
@@ -308,14 +310,13 @@ count is the health signal:
 code — see [CONTRIBUTING.md](CONTRIBUTING.md) for the loop and the platform traps.
 
 > [!NOTE]
-> The Translation framework is unavailable on **tvOS and visionOS**, which build
-> without it and show site text as published.
+> Translation behaves the same on all four platforms and works in the Simulator.
+> It previously used Apple's Translation framework, which is unavailable on tvOS
+> and visionOS and refuses to run on simulated devices at all.
 
 > [!IMPORTANT]
-> **Translation can only be tested on real hardware.** The Simulator refuses
-> outright — *"Translation is not supported on simulated devices"* — so
-> `LanguageAvailability` reports pairs as `supported` but never `installed` and
-> nothing translates. Failures surface in Profile › Language rather than silently.
+> Translation is the one feature that sends anything off the device. It is **off
+> until switched on**, and text already in the device's language is never sent.
 
 ## Content and provenance
 

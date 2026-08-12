@@ -6,14 +6,10 @@ The app's top level view.
 */
 
 import SwiftUI
-#if os(iOS) || os(macOS)
-import Translation
-#endif
 
 /// A view that presents the app's user interface.
 struct ContentView: View {
     @Environment(PlayerModel.self) private var player
-    @Environment(TranslationStore.self) private var translator
     #if os(visionOS)
     @Environment(ImmersiveEnvironment.self) private var immersiveEnvironment
     #endif
@@ -29,16 +25,6 @@ struct ContentView: View {
                 AgeGateView { didConfirmAge = true }
             }
         }
-        // Translating needs no hosting — the store builds its own session. This
-        // task exists only so the system can present its language-download UI,
-        // which a directly built session isn't allowed to request.
-        #if os(iOS) || os(macOS)
-        // @Sendable so the closure doesn't inherit this view's main actor
-        // isolation: TranslationSession isn't Sendable and has to stay put.
-        .translationTask(translator.downloadConfiguration) { @Sendable session in
-            await translator.completeDownload(using: session)
-        }
-        #endif
     }
 
     @ViewBuilder

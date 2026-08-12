@@ -7,9 +7,6 @@ A view that presents the video content details.
 
 import SwiftUI
 import SwiftData
-#if os(iOS) || os(macOS)
-import Translation
-#endif
 
 /// A view that presents the video content details.
 struct DetailView: View {
@@ -25,7 +22,6 @@ struct DetailView: View {
     @State var video: Video
     @State private var related: [Video] = []
     @State private var isSaved = false
-    @State private var isShowingSystemTranslation = false
     @State private var isLoadingDetails = false
     /// The rendition that will actually play, once the sources are known.
     @State private var playbackHeight: Int?
@@ -70,21 +66,6 @@ struct DetailView: View {
                             Label(isSaved ? "Saved" : "Save",
                                   systemImage: isSaved ? "heart.fill" : "heart")
                         }
-
-                        #if os(iOS) || os(macOS)
-                        // The system's own translation popover — the same one Safari
-                        // and Notes present. It handles its own language downloads,
-                        // and shows the full title rather than the trimmed one.
-                        Button {
-                            isShowingSystemTranslation = true
-                        } label: {
-                            Label("Translate", systemImage: "character.bubble")
-                        }
-                        .translationPresentation(
-                            isPresented: $isShowingSystemTranslation,
-                            text: video.rawTitle
-                        )
-                        #endif
 
                         Spacer()
                     }

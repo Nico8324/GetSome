@@ -73,48 +73,40 @@ struct ProfileView: View {
                     """)
             }
 
-            if translator.isSupported {
-                Section {
-                    Toggle("Translate to \(store.targetLanguageName)", isOn: $store.isEnabled)
+            Section {
+                Toggle("Translate to \(store.targetLanguageName)", isOn: $store.isEnabled)
 
-                    // The rest only matters once translation is on.
-                    if store.isEnabled {
-                        Toggle("Offer Downloads Automatically", isOn: $store.downloadsAutomatically)
-
-                        if !translator.missingLanguageNames.isEmpty {
-                            Button("Download \(translator.missingLanguageNames.formatted(.list(type: .and)))") {
-                                translator.downloadMissingLanguages()
+                // Status only matters once translation is on.
+                if store.isEnabled {
+                    if translator.isTranslating {
+                        LabeledContent("Status") {
+                            HStack(spacing: Constants.genreVerticalPadding) {
+                                ProgressView().controlSize(.small)
+                                Text("Translating…")
                             }
                         }
-
-                        if translator.isTranslating {
-                            LabeledContent("Status") {
-                                HStack(spacing: Constants.genreVerticalPadding) {
-                                    ProgressView().controlSize(.small)
-                                    Text("Translating…")
-                                }
-                            }
-                        } else if let error = translator.lastError {
-                            LabeledContent("Status") {
-                                Text(error)
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
-                                    .multilineTextAlignment(.trailing)
-                            }
+                    } else if let error = translator.lastError {
+                        LabeledContent("Status") {
+                            Text(error)
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.trailing)
                         }
                     }
-                } header: {
-                    Text("Language")
-                } footer: {
-                    Text(store.isEnabled ? """
-                        Titles and keywords are translated on this device — nothing is sent \
-                        anywhere. Each language downloads once, and only you can approve it.
-                        """ : """
-                        Off, so titles and keywords stay in whatever language they were uploaded \
-                        in. Turning this on translates them on this device; each language it \
-                        meets has to be downloaded first, which takes up space.
-                        """)
                 }
+            } header: {
+                Text("Language")
+            } footer: {
+                // Stated plainly in both states: this is the one feature that sends
+                // anything about your browsing off the device.
+                Text(store.isEnabled ? """
+                    Titles and keywords are sent to Google Translate to be translated. Text \
+                    already in \(store.targetLanguageName) never leaves this device.
+                    """ : """
+                    Off, so titles and keywords stay in whatever language they were uploaded \
+                    in. Turning this on sends them to Google Translate — the only part of this \
+                    app that shares what you’re browsing.
+                    """)
             }
 
             Section {
@@ -133,12 +125,10 @@ struct ProfileView: View {
                 }
                 .disabled(didClearCache)
 
-                if translator.isSupported {
-                    Button("Clear Saved Translations") {
-                        translator.clearCache()
-                    }
-                    .disabled(translator.translations.isEmpty)
+                Button("Clear Saved Translations") {
+                    translator.clearCache()
                 }
+                .disabled(translator.translations.isEmpty)
             } header: {
                 Text("Storage")
             } footer: {

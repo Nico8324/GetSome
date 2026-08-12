@@ -19,9 +19,6 @@ done
 
 Things that differ by platform, from experience:
 
-- The **Translation** framework is unavailable on tvOS *and* visionOS. Guard with
-  `#if os(iOS) || os(macOS)` — `canImport(Translation)` is not enough, since
-  visionOS can import it but the API is unavailable.
 - **tvOS** has no navigation bar for toolbar items, and no `ShareLink`.
 - **macOS** wants `.menu` pickers where the others want `.navigationLink`.
 

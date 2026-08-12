@@ -33,6 +33,22 @@ That has consequences worth stating plainly:
   source site, with its own signed, short-lived URLs. The app caches page text and
   poster images only.
 
+## Translation
+
+Translation is the only feature that sends anything about your browsing to a party
+other than the site being browsed. When it is switched on, the titles and keywords
+shown on screen go to Google's public `translate_a` endpoint, associated with your
+IP address.
+
+It is **off by default** and stays off until switched on in Profile › Language,
+where the same thing is stated before you enable it. Language detection runs on
+device, so text already in your language is dropped before any request and is never
+sent. Nothing else — what you play, save, or search for — is sent anywhere.
+
+Earlier versions translated entirely on device with Apple's Translation framework.
+That was replaced because it required a per-language download, and was unavailable
+on tvOS and visionOS and on all simulated devices.
+
 ## Boundaries kept during development
 
 These held throughout and are worth keeping:

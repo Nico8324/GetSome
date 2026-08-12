@@ -9,60 +9,44 @@ import Foundation
 import NaturalLanguage
 import SwiftUI
 
-// The Translation framework is unavailable on tvOS and visionOS, so every use of
-// it is behind this condition.
-#if os(iOS) || os(macOS)
-import Translation
-#endif
-
 /// Translates the text that sources publish into the language of the device.
 ///
 /// Sites publish titles and keywords in whatever language they were uploaded in —
 /// often several within one listing. This object collects that text, groups it by
-/// the language it appears to be written in, and translates each group on device
-/// with Apple's Translation framework. Nothing leaves the device, and results are
-/// cached so a title is only ever translated once.
+/// the language it appears to be written in, and sends each group to a
+/// ``TranslationService``. Results are cached, so a title is translated once and
+/// then survives relaunches.
 ///
 /// Views ask for text through ``text(for:)``, which answers immediately with the
 /// original and swaps in a translation when one arrives.
+///
+/// **This sends text off the device.** Titles and keywords go to a third-party
+/// service, which is why it stays off until switched on — see ``isEnabled``.
+/// Language detection is the one part that stays local, which also means text
+/// already in the device's language is never sent anywhere.
 @MainActor
 @Observable
 final class TranslationStore {
     /// The user defaults key that holds whether translation is on.
     static let isEnabledKey = "translateSiteText"
 
-    /// The user defaults key that holds whether the app asks to download languages.
-    static let automaticDownloadKey = "downloadTranslationLanguagesAutomatically"
-
-    /// The user defaults key that holds the languages already asked about.
-    private static let askedLanguagesKey = "askedTranslationLanguages"
-
     /// Whether the app translates the text sources publish.
     ///
-    /// Off until asked for. Translating means downloading a language model per
-    /// language, which costs real disk space, so the app doesn't decide that on
-    /// someone's behalf — and while it's off nothing is detected, queued, or
-    /// prompted for.
+    /// Off until asked for. Translating sends what you're browsing to a third party,
+    /// so the app doesn't decide that on someone's behalf — and while it's off,
+    /// nothing is detected, queued, or sent.
     var isEnabled: Bool {
         didSet {
             UserDefaults.standard.set(isEnabled, forKey: Self.isEnabledKey)
-            if isEnabled {
-                lastError = nil
-                enqueueEverythingSeen()
-                scheduleFlush()
-            } else {
-                #if os(iOS) || os(macOS)
-                downloadConfiguration = nil
-                #endif
-            }
+            guard isEnabled else { return }
+            lastError = nil
+            enqueueEverythingSeen()
+            scheduleFlush()
         }
     }
 
     /// The language to translate into.
     let targetLanguage: Locale.Language
-
-    /// A Boolean value that indicates whether this platform can translate at all.
-    let isSupported: Bool
 
     /// Translations of site text, keyed by the original.
     ///
@@ -70,33 +54,14 @@ final class TranslationStore {
     /// than once per title.
     private(set) var translations = [String: String]()
 
-    /// Whether the app offers to download a language the moment it needs one.
-    ///
-    /// The download itself always needs a person's confirmation — the framework
-    /// gives no way to fetch a language silently — but with this on, the app raises
-    /// that request at the moment it hits the language, rather than leaving it
-    /// buried in settings. Each language is asked about once, ever.
-    var downloadsAutomatically: Bool {
-        didSet { UserDefaults.standard.set(downloadsAutomatically, forKey: Self.automaticDownloadKey) }
-    }
-
-    /// Languages the app has text for but that aren't downloaded yet.
-    private(set) var languagesNeedingDownload = Set<String>()
-
     /// A Boolean value that indicates whether a batch is in flight.
     private(set) var isTranslating = false
 
     /// Why the last attempt failed, if it did.
     ///
-    /// Worth surfacing rather than swallowing: on the Simulator the framework
-    /// refuses outright, and without this the app just quietly never translates.
+    /// Worth surfacing rather than swallowing: the service can start refusing
+    /// requests, and without this the app would just quietly stop translating.
     private(set) var lastError: String?
-
-    #if os(iOS) || os(macOS)
-    /// Drives the one translation task `ContentView` still hosts, which exists
-    /// only to present the system's language-download UI.
-    private(set) var downloadConfiguration: TranslationSession.Configuration?
-    #endif
 
     /// Text waiting to be translated, grouped by the language it appears to be in.
     ///
@@ -113,29 +78,21 @@ final class TranslationStore {
     @ObservationIgnored private var recentlySeen = Set<String>()
     @ObservationIgnored private let seenLimit = 600
 
-    /// Language pairs already checked with the system, so each is asked once.
-    @ObservationIgnored private var availability = [String: Bool]()
-
-    /// Languages the app has already asked to download, so it never nags twice.
-    @ObservationIgnored private var askedLanguages: Set<String>
-
-    /// At most one download request per launch, however many languages appear.
-    @ObservationIgnored private var didRequestDownloadThisSession = false
+    /// When the service last asked to be left alone, if it did.
+    ///
+    /// A rate-limited batch goes back in the queue rather than being abandoned — it
+    /// is a temporary refusal, unlike text the service can't handle at all.
+    @ObservationIgnored private var retryAfter: Date?
 
     @ObservationIgnored private var flushTask: Task<Void, Never>?
     @ObservationIgnored private let cache: TranslationCache
+    @ObservationIgnored private let service: any TranslationService
 
-    init(targetLanguage: Locale.Language = Locale.current.language) {
+    init(targetLanguage: Locale.Language = Locale.current.language,
+         service: any TranslationService = GoogleTranslator()) {
         self.targetLanguage = targetLanguage
-        #if os(iOS) || os(macOS)
-        self.isSupported = true
-        #else
-        self.isSupported = false
-        #endif
+        self.service = service
         self.isEnabled = UserDefaults.standard.object(forKey: Self.isEnabledKey) as? Bool ?? false
-        self.downloadsAutomatically =
-            UserDefaults.standard.object(forKey: Self.automaticDownloadKey) as? Bool ?? true
-        self.askedLanguages = Set(UserDefaults.standard.stringArray(forKey: Self.askedLanguagesKey) ?? [])
         self.cache = TranslationCache(language: targetLanguage.minimalIdentifier)
         self.translations = cache.load()
     }
@@ -146,14 +103,9 @@ final class TranslationStore {
             ?? targetLanguage.minimalIdentifier
     }
 
-    /// The name of a language code, for the profile screen.
-    nonisolated func name(of languageCode: String) -> String {
-        Locale.current.localizedString(forLanguageCode: languageCode) ?? languageCode
-    }
-
-    /// The languages waiting on a download, named and in a stable order.
-    var missingLanguageNames: [String] {
-        languagesNeedingDownload.map(name(of:)).sorted()
+    /// The code the service is asked to translate into.
+    private var targetCode: String {
+        targetLanguage.languageCode?.identifier ?? "en"
     }
 
     // MARK: - Asking for text
@@ -162,7 +114,7 @@ final class TranslationStore {
     ///
     /// Safe to call from a view's body: a miss is queued without notifying observers.
     func text(for original: String) -> String {
-        guard isSupported, !original.isEmpty else { return original }
+        guard !original.isEmpty else { return original }
         // Remember it even while translation is off, so switching it on catches up
         // with what's already on screen instead of waiting for those views to
         // happen to redraw.
@@ -171,6 +123,11 @@ final class TranslationStore {
         if let translation = translations[original] { return translation }
         enqueue(original)
         return original
+    }
+
+    /// Returns translations for a list of site text, such as a video's keywords.
+    func text(for originals: [String]) -> [String] {
+        originals.map { text(for: $0) }
     }
 
     /// Records text a view asked about, keeping the most recent ``seenLimit``.
@@ -190,18 +147,14 @@ final class TranslationStore {
         }
     }
 
-    /// Returns translations for a list of site text, such as a video's keywords.
-    func text(for originals: [String]) -> [String] {
-        originals.map { text(for: $0) }
-    }
-
     private func enqueue(_ original: String) {
         guard !skipped.contains(original) else { return }
         guard let language = Self.language(of: original) else {
             skipped.insert(original)
             return
         }
-        // Text already in the device's language needs nothing.
+        // Text already in the device's language needs nothing — and this is what
+        // keeps it from being sent anywhere.
         guard language != targetLanguage.languageCode?.identifier else {
             skipped.insert(original)
             return
@@ -212,57 +165,34 @@ final class TranslationStore {
 
     /// Waits briefly so a screenful of cards becomes one batch instead of thirty.
     private func scheduleFlush() {
-        guard isEnabled, isSupported, flushTask == nil, !pending.isEmpty else { return }
+        guard isEnabled, flushTask == nil, !pending.isEmpty else { return }
         flushTask = Task { [weak self] in
             try? await Task.sleep(for: .milliseconds(250))
             self?.flushTask = nil
-            await self?.beginNextBatch()
+            await self?.translateNextBatch()
         }
     }
 
     // MARK: - Translating
 
-    #if os(iOS) || os(macOS)
-    /// Translates the next language group, or asks to download one.
+    /// Translates one batch, then schedules the next if anything is still queued.
     ///
-    /// Languages the device already has go first, so the app translates everything
-    /// it can before it considers asking for a download.
-    private func beginNextBatch() async {
+    /// Batches are per-language because the service detects a single language for
+    /// everything it's given: mixing languages in one request leaves some of them
+    /// untranslated. Telling it the language outright avoids that, and the detection
+    /// happens on device anyway.
+    private func translateNextBatch() async {
         guard isEnabled, !isTranslating, !pending.isEmpty else { return }
 
-        // Most queued text first — that's the language a person is actually reading.
-        let byVolume = pending.sorted { $0.value.count > $1.value.count }.map(\.key)
-
-        var missing = [String]()
-        for language in byVolume {
-            if await isAvailable(from: language) {
-                await translateBatch(from: language)
-                return
-            }
-            // isAvailable prunes pairs the system can't do at all.
-            if pending[language] != nil {
-                languagesNeedingDownload.insert(language)
-                missing.append(language)
-            }
-        }
-
-        // Nothing translatable is queued. Offer to fetch the biggest missing one.
-        guard downloadsAutomatically,
-              !didRequestDownloadThisSession,
-              let language = missing.first(where: { !askedLanguages.contains($0) }) else {
+        // Still being rate limited — come back later rather than burning the batch.
+        if let retryAfter, retryAfter > .now {
+            scheduleRetry(at: retryAfter)
             return
         }
-        didRequestDownloadThisSession = true
-        requestDownload(of: language)
-    }
 
-    /// Translates everything queued for one language.
-    ///
-    /// An installed language pair needs no SwiftUI hosting — the session is built
-    /// directly. Only the download request still needs a hosted session, because a
-    /// directly built one reports `canRequestDownloads == false`.
-    private func translateBatch(from language: String) async {
-        let batch = Array(pending.removeValue(forKey: language) ?? [])
+        // Most queued text first — that's the language a person is actually reading.
+        guard let language = pending.max(by: { $0.value.count < $1.value.count })?.key else { return }
+        let batch = takeBatch(for: language)
         guard !batch.isEmpty else { return }
 
         isTranslating = true
@@ -271,147 +201,56 @@ final class TranslationStore {
             if !pending.isEmpty { scheduleFlush() }
         }
 
-        switch await Self.translate(batch, from: language, to: targetLanguage) {
-        case .success(let results):
+        do {
+            let results = try await service.translate(batch, from: language, to: targetCode)
             // One write, so a page of cards redraws once rather than once per title.
-            translations.merge(results) { _, new in new }
+            translations.merge(zip(batch, results)) { _, new in new }
             cache.save(translations)
             lastError = nil
-        case .failure(let reason):
-            abandon(batch, reason: reason)
-        }
-    }
-
-    /// The outcome of one batch, reduced to values that cross isolation safely.
-    private enum BatchResult {
-        case success([String: String])
-        case failure(String)
-    }
-
-    /// Performs the translation away from the main actor.
-    ///
-    /// `TranslationSession` and its `Request` aren't `Sendable`, so both are created
-    /// and consumed inside this one nonisolated function. Only strings come back.
-    nonisolated private static func translate(
-        _ texts: [String],
-        from language: String,
-        to target: Locale.Language
-    ) async -> BatchResult {
-        let session = TranslationSession(
-            installedSource: Locale.Language(identifier: language),
-            target: target
-        )
-        do {
-            let requests = texts.map { TranslationSession.Request(sourceText: $0) }
-            let responses = try await session.translations(from: requests)
-            return .success(Dictionary(responses.map { ($0.sourceText, $0.targetText) },
-                                       uniquingKeysWith: { _, new in new }))
+            retryAfter = nil
+        } catch TranslationServiceError.rateLimited {
+            // A temporary refusal: put the work back rather than losing it.
+            pending[language, default: []].formUnion(batch)
+            let resume = Date.now.addingTimeInterval(60)
+            retryAfter = resume
+            lastError = TranslationServiceError.rateLimited.localizedDescription
+            scheduleRetry(at: resume)
         } catch {
-            return .failure(error.localizedDescription)
+            abandon(batch, reason: error.localizedDescription)
         }
     }
 
-    // MARK: - Downloading a language
-
-    /// Asks the system to download the language the queued text needs.
-    ///
-    /// The profile screen calls this so a person can retry — or ask again for a
-    /// language they declined earlier, which the automatic path won't do.
-    func downloadMissingLanguages() {
-        guard let language = languagesNeedingDownload.sorted().first else { return }
-        requestDownload(of: language)
+    /// Removes up to one request's worth of text from a language's queue.
+    private func takeBatch(for language: String) -> [String] {
+        guard var queue = pending[language] else { return [] }
+        var batch = [String]()
+        var characters = 0
+        for text in queue.sorted() {
+            let next = characters + text.count + 1
+            if !batch.isEmpty && (batch.count >= GoogleTranslator.batchLimit
+                                  || next > GoogleTranslator.characterLimit) { break }
+            batch.append(text)
+            characters = next
+        }
+        queue.subtract(batch)
+        pending[language] = queue.isEmpty ? nil : queue
+        return batch
     }
 
-    /// Points the hosted translation task at a language pair so it can offer the
-    /// system's download UI. This is the one thing a directly built session can't do.
-    private func requestDownload(of language: String) {
-        rememberAsking(about: language)
-        shouldPrepare = true
-
-        let source = Locale.Language(identifier: language)
-        if downloadConfiguration?.source == source {
-            // The same pair as last time produces an equal value, which wouldn't
-            // restart the task on its own.
-            downloadConfiguration?.invalidate()
-        } else {
-            downloadConfiguration = TranslationSession.Configuration(source: source, target: targetLanguage)
+    private func scheduleRetry(at date: Date) {
+        guard flushTask == nil else { return }
+        flushTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(max(1, date.timeIntervalSinceNow)))
+            self?.flushTask = nil
+            await self?.translateNextBatch()
         }
     }
 
-    private func rememberAsking(about language: String) {
-        askedLanguages.insert(language)
-        UserDefaults.standard.set(Array(askedLanguages), forKey: Self.askedLanguagesKey)
-    }
-
-    /// Whether the next hosted session should offer to download its languages.
-    @ObservationIgnored private var shouldPrepare = false
-
-    /// Downloads the session's languages, then clears the flag.
-    ///
-    /// `ContentView` calls this from the one `translationTask` the app still hosts.
-    nonisolated func completeDownload(using session: TranslationSession) async {
-        guard await claimPreparation() else { return }
-        guard session.canRequestDownloads else {
-            await report("This device can’t request translation downloads.")
-            return
-        }
-        do {
-            try await session.prepareTranslation()
-            await languageBecameAvailable(session.sourceLanguage?.languageCode?.identifier)
-        } catch {
-            await report("Unable to download a translation language: \(error.localizedDescription)")
-        }
-    }
-
-    // MARK: - Main-actor state, reached from the nonisolated session work
-
-    /// Stops retrying text the framework couldn't handle.
+    /// Stops retrying text the service couldn't handle.
     private func abandon(_ batch: [String], reason: String) {
         logger.error("Unable to translate \(batch.count) strings: \(reason)")
         skipped.formUnion(batch)
         lastError = reason
-    }
-
-    private func claimPreparation() -> Bool {
-        defer { shouldPrepare = false }
-        return shouldPrepare
-    }
-
-    private func languageBecameAvailable(_ language: String?) {
-        guard let language else { return }
-        languagesNeedingDownload.remove(language)
-        availability[key(from: language)] = true
-        // The text that was waiting on it can go now.
-        scheduleFlush()
-    }
-
-    private func report(_ message: String) {
-        logger.error("\(message)")
-        lastError = message
-    }
-
-    /// Returns whether the device can translate from a language right now.
-    private func isAvailable(from language: String) async -> Bool {
-        if let known = availability[key(from: language)] { return known }
-        let status = await LanguageAvailability().status(
-            from: Locale.Language(identifier: language),
-            to: targetLanguage
-        )
-        let installed = status == .installed
-        availability[key(from: language)] = installed
-        if status == .unsupported {
-            // Nothing will ever translate this pair, so stop asking.
-            pending.removeValue(forKey: language).map { skipped.formUnion($0) }
-        }
-        return installed
-    }
-    #else
-    private func beginNextBatch() async {}
-    func downloadMissingLanguages() {}
-    #endif
-
-    private func key(from language: String) -> String {
-        "\(language)->\(targetLanguage.minimalIdentifier)"
     }
 
     /// Forgets every translation the app has cached.
@@ -426,8 +265,8 @@ final class TranslationStore {
     /// The languages site text is realistically written in.
     ///
     /// Without a prior, the recognizer confuses scripts it sees rarely — a Russian
-    /// title comes back as Kazakh with full confidence, and then nothing translates
-    /// because that pair isn't installed. Weighting the languages tube sites
+    /// title comes back as Kazakh with full confidence, and then that group is sent
+    /// off labelled as the wrong language. Weighting the languages tube sites
     /// actually publish in fixes that without hard-coding a single answer.
     nonisolated private static let languagePrior: [NLLanguage: Double] = [
         .english: 3, .russian: 3, .spanish: 2, .portuguese: 2, .german: 2,
@@ -441,7 +280,7 @@ final class TranslationStore {
     ///
     /// Short strings — a one-word keyword — often can't be identified with any
     /// confidence. Those return `nil` and stay untranslated rather than being
-    /// mangled by a wrong guess.
+    /// mangled by a wrong guess, which also keeps them off the network.
     nonisolated static func language(of text: String) -> String? {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed.count >= 4, trimmed.rangeOfCharacter(from: .letters) != nil else { return nil }
