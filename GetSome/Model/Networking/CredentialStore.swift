@@ -88,6 +88,8 @@ enum CredentialError: LocalizedError {
     case keychain(OSStatus)
     case missingToken
     case rejected
+    case rejectedWithReason(String)
+    case unrecognizedResponse
 
     var errorDescription: String? {
         switch self {
@@ -100,6 +102,15 @@ enum CredentialError: LocalizedError {
         case .rejected:
             String(localized: "The site didn’t accept that email and password.",
                    comment: "An error shown when a site rejects a sign-in")
+        case .rejectedWithReason(let reason):
+            // The site's own words, which say more than a generic refusal can —
+            // an unverified address or a locked account read very differently.
+            reason
+        case .unrecognizedResponse:
+            // Deliberately distinct from a rejection: this means the app couldn't
+            // tell whether the sign-in worked, which is a different thing to fix.
+            String(localized: "The site answered, but this app couldn’t tell whether the sign-in worked. Its sign-in page has probably changed.",
+                   comment: "An error shown when a sign-in response can't be interpreted")
         }
     }
 }

@@ -22,6 +22,33 @@ protocol AuthenticatingSource: ContentSource {
 
     /// Whether a page fetched after signing in shows a signed-in person.
     func isSignedIn(in html: String) -> Bool
+
+    /// The site's own explanation for a refused sign-in, when it gives one.
+    ///
+    /// Returning `nil` means "not signed in, and the page said nothing about why",
+    /// which the authenticator reports differently from a stated refusal — one is
+    /// a wrong password, the other is a page this app can no longer read.
+    func signInFailureReason(in html: String) -> String?
+}
+
+extension AuthenticatingSource {
+    /// Looks for an error the site rendered next to its sign-in form.
+    ///
+    /// Deliberately generic: the exact markup can't be known without a failed
+    /// sign-in to look at, and this is the one path that can't be rehearsed
+    /// against the live site without an account.
+    func signInFailureReason(in html: String) -> String? {
+        let patterns = [
+            #"<[^>]*class="[^"]*(?:error|alert|invalid)[^"]*"[^>]*>\s*([^<]{4,200}?)\s*<"#,
+            #"<[^>]*(?:id|class)="[^"]*form-error[^"]*"[^>]*>\s*([^<]{4,200}?)\s*<"#
+        ]
+        for pattern in patterns {
+            guard let found = HTMLScanner.firstMatch(of: pattern, in: html) else { continue }
+            let message = HTMLScanner.decode(found).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !message.isEmpty { return message }
+        }
+        return nil
+    }
 }
 
 /// Signs in to a site and holds the resulting session.
@@ -64,8 +91,20 @@ actor SourceAuthenticator {
         request.httpBody = source.signInBody(username: username, password: password, token: token)
 
         let (data, _) = try await session.data(for: request)
-        guard source.isSignedIn(in: String(decoding: data, as: UTF8.self)) else {
-            throw CredentialError.rejected
+        let html = String(decoding: data, as: UTF8.self)
+
+        // Plausibility first, because success is inferred from the *absence* of the
+        // sign-in form — so a stub, a challenge page, or an empty body would all
+        // read as signed in and get a password written to the keychain. Whatever a
+        // site answers when it refuses, it answers with a page.
+        guard html.count >= 2_000 else { throw CredentialError.unrecognizedResponse }
+
+        guard source.isSignedIn(in: html) else {
+            // Whether the site *said* why separates "wrong password" from "this app
+            // can no longer read the page". Without that split, both look identical
+            // to whoever has to fix it.
+            throw source.signInFailureReason(in: html)
+                .map(CredentialError.rejectedWithReason) ?? CredentialError.rejected
         }
 
         try CredentialStore.save(Credential(username: username, password: password), for: source.id)
