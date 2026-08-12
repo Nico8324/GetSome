@@ -100,7 +100,7 @@ struct GetSomeApp: App {
     /// Initializes the storage for the videos a person saves.
     init() {
         do {
-            self.modelContainer = try ModelContainer(for: SavedVideo.self)
+            self.modelContainer = try ModelContainer(for: SavedVideo.self, WatchedVideo.self)
         } catch {
             // The saved-video schema is still moving as sources are added. Rather
             // than refusing to launch on a store SwiftData can't migrate, start
@@ -120,7 +120,7 @@ struct GetSomeApp: App {
         for suffix in ["", "-shm", "-wal"] {
             try? FileManager.default.removeItem(at: URL(filePath: url.path() + suffix))
         }
-        return try ModelContainer(for: SavedVideo.self)
+        return try ModelContainer(for: SavedVideo.self, WatchedVideo.self)
     }
 }
 

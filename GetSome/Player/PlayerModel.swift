@@ -6,6 +6,7 @@ A model object that manages the playback of video.
 */
 
 import AVKit
+import SwiftData
 import GroupActivities
 
 /// The presentation modes the player supports.
@@ -24,6 +25,10 @@ enum Presentation {
 
     /// A Boolean value that indicates whether playback of the current item is complete.
     private(set) var isPlaybackComplete = false
+
+    /// Where watch history is written, handed over by ``ContentView`` once the
+    /// model container exists. Nothing is recorded until it does.
+    @ObservationIgnored var historyContext: ModelContext?
 
     /// The presentation in which to display the current media.
     ///
@@ -259,6 +264,14 @@ enum Presentation {
         shouldAutoPlay = autoplay
         isPlaybackComplete = false
         loadError = nil
+
+        // Recorded on load rather than on first frame: a video that fails to resolve
+        // was still something a person chose to watch, and history is more useful
+        // for retracing that choice than for proving playback happened. A preview
+        // clip isn't a watch, though.
+        if !usePreview {
+            historyContext?.recordWatch(video)
+        }
 
         loadTask?.cancel()
         loadTask = Task {

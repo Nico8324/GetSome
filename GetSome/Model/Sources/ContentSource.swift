@@ -185,6 +185,9 @@ protocol ContentSource: Sendable {
     /// Chooses which resolution to play from the ones the source published.
     func preferredStream(from streams: [StreamSource]) -> StreamSource?
 
+    /// Whether a feed can only be read while signed in.
+    func requiresSignIn(_ feed: Feed) -> Bool
+
     /// The headers to attach to media requests for this source.
     ///
     /// The player fetches manifests and segments on its own networking stack, which
@@ -237,6 +240,12 @@ extension ContentSource {
     func streams(in response: SourceResponse) throws -> [StreamSource] { [] }
 
     func categories(in response: SourceResponse) throws -> [Feed] { [] }
+
+    /// Whether a feed can only be read while signed in.
+    ///
+    /// Default false: most feeds are public, and a source without accounts never
+    /// answers anything else.
+    func requiresSignIn(_ feed: Feed) -> Bool { false }
 
     /// Sends media requests with the same identification a page request carries.
     ///

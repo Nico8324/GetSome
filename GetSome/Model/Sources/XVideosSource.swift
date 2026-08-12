@@ -22,7 +22,9 @@ struct XVideosSource: ContentSource {
     let homeURL = URL(string: "https://www.xvideos.com/")!
 
     var feeds: [Feed] {
-        [
+        // Offered only once there's a stored credential: a feed that can only ever
+        // show a sign-in page isn't worth a row in the picker.
+        accountFeeds + [
             makeFeed("home",
                      name: String(localized: "Popular", comment: "Collection name"),
                      description: String(localized: "The front page, refreshed through the day.",
@@ -62,9 +64,20 @@ struct XVideosSource: ContentSource {
         case "verified":
             // Zero-based, unlike /new.
             return homeURL.appending(path: "verified/videos/\(page - 1)")
+        case "playlists":
+            // /account/favorites redirects here: on this site favourites *are*
+            // playlists, so one feed covers both.
+            return page == 1 ? homeURL.appending(path: "account/playlists") : nil
+        case "subscriptions":
+            return page == 1 ? homeURL.appending(path: "account/subscriptions") : nil
         default:
             return nil
         }
+    }
+
+    /// The two feeds that only exist for a signed-in person.
+    func requiresSignIn(_ feed: Feed) -> Bool {
+        feed.sourceID == id && ["playlists", "subscriptions"].contains(feed.slug)
     }
 
     func searchURL(query: String, page: Int) -> URL? {
@@ -338,5 +351,27 @@ extension XVideosSource: AuthenticatingSource {
         // The sign-in form is served to anyone who isn't signed in — including on
         // the account pages themselves — so its absence is the signal.
         !html.contains("signin-form[password]")
+    }
+}
+
+extension XVideosSource {
+    /// The feeds that belong to a signed-in account.
+    ///
+    /// Empty until a credential is stored, so signing out removes them rather than
+    /// leaving rows that lead to a login page.
+    var accountFeeds: [Feed] {
+        guard CredentialStore.hasCredential(for: id) else { return [] }
+        return [
+            makeFeed("subscriptions",
+                     name: String(localized: "Subscriptions", comment: "Collection name"),
+                     description: String(localized: "New videos from the accounts you follow.",
+                                         comment: "The description of a collection of videos."),
+                     icon: "person.2"),
+            makeFeed("playlists",
+                     name: String(localized: "Favorites", comment: "Collection name"),
+                     description: String(localized: "The playlists you keep on this site.",
+                                         comment: "The description of a collection of videos."),
+                     icon: "heart.text.square")
+        ]
     }
 }

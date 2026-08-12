@@ -24,6 +24,16 @@ struct ProfileView: View {
     @Query(sort: \SavedVideo.createdAt, order: .reverse)
     private var saved: [SavedVideo]
 
+    @Query(sort: \WatchedVideo.watchedAt, order: .reverse)
+    private var watched: [WatchedVideo]
+
+    @State private var email = ""
+    @State private var password = ""
+    @State private var isSigningIn = false
+    @State private var isSignedIn = false
+    @State private var signedInAs: String?
+    @State private var signInError: String?
+
     @AppStorage(ContentSources.primarySourceKey) private var primarySourceID = ContentSources.all[0].id
     @AppStorage(PlaybackSettings.maximumQualityKey) private var maximumQuality = StreamQuality.auto.rawValue
     @AppStorage("didConfirmAge") private var didConfirmAge = false
@@ -34,6 +44,28 @@ struct ProfileView: View {
     @State private var isConfirmingRemoveAll = false
     @State private var didClearCache = false
     @State private var requestCount = 0
+
+    /// Signs in, then clears the password from memory either way.
+    ///
+    /// The field is emptied on failure too: leaving a rejected password sitting in
+    /// a view's state is the kind of thing that ends up in a screenshot.
+    private func signIn(to account: any AuthenticatingSource) {
+        isSigningIn = true
+        signInError = nil
+        let username = email
+        let secret = password
+        password = ""
+        Task {
+            do {
+                try await SourceAuthenticator.shared.signIn(to: account, username: username, password: secret)
+                isSignedIn = true
+                signedInAs = username
+            } catch {
+                signInError = error.localizedDescription
+            }
+            isSigningIn = false
+        }
+    }
 
     var body: some View {
         // @Bindable is the supported way to bind to an @Observable object held in
@@ -145,6 +177,65 @@ struct ProfileView: View {
                 Text("Locking asks for age confirmation again before showing anything.")
             }
 
+            if let account = ContentSources.all.compactMap({ $0 as? any AuthenticatingSource }).first {
+                Section {
+                    if isSignedIn {
+                        LabeledContent("Signed in", value: signedInAs ?? account.displayName)
+                        Button("Sign Out", role: .destructive) {
+                            Task {
+                                await SourceAuthenticator.shared.signOut(of: account)
+                                isSignedIn = false
+                                signedInAs = nil
+                            }
+                        }
+                    } else {
+                        TextField("Email", text: $email)
+                            #if !os(macOS)
+                            .textContentType(.username)
+                            .keyboardType(.emailAddress)
+                            .textInputAutocapitalization(.never)
+                            #endif
+                        SecureField("Password", text: $password)
+                            #if !os(macOS)
+                            .textContentType(.password)
+                            #endif
+                        Button(isSigningIn ? "Signing In…" : "Sign In") {
+                            signIn(to: account)
+                        }
+                        .disabled(email.isEmpty || password.isEmpty || isSigningIn)
+                        if let signInError {
+                            Text(signInError)
+                                .font(.footnote)
+                                .foregroundStyle(.red)
+                        }
+                    }
+                } header: {
+                    Text("\(account.displayName) Account")
+                } footer: {
+                    Text(isSignedIn ? """
+                        Your subscriptions and favorites appear as feeds in Browse. \
+                        Signing out forgets the password stored on this device.
+                        """ : """
+                        Optional. Signing in adds your subscriptions and favorites as feeds. \
+                        The password is kept in this device's keychain, sent only to \
+                        \(account.displayName), and never written to Diagnostics.
+                        """)
+                }
+            }
+
+            Section {
+                NavigationLink {
+                    HistoryView()
+                } label: {
+                    LabeledContent("History", value: watched.count.formatted())
+                }
+            } footer: {
+                Text("""
+                    Kept by this app, across every site, and never sent anywhere. \
+                    Clearing it is on that screen.
+                    """)
+            }
+
             Section {
                 NavigationLink {
                     DiagnosticsView()
@@ -167,6 +258,13 @@ struct ProfileView: View {
         .navigationTitle("Profile")
         .task {
             requestCount = await RequestLog.shared.recent.count
+            // A stored credential means signed in as far as this screen is
+            // concerned; the session itself is restored lazily on first use.
+            if let account = ContentSources.all.compactMap({ $0 as? any AuthenticatingSource }).first,
+               let stored = CredentialStore.credential(for: account.id) {
+                isSignedIn = true
+                signedInAs = stored.username
+            }
         }
         #if !os(tvOS)
         .toolbar {

@@ -52,6 +52,14 @@ actor ContentClient {
         guard let url = source.listingURL(for: feed, page: page) else {
             throw ContentError.unsupportedFeed(feed.name)
         }
+        // A signed-in feed is fetched on the authenticator's session, which carries
+        // the login cookies — and, just as deliberately, doesn't record anything to
+        // RequestLog. See SourceAuthenticator.
+        if source.requiresSignIn(feed), let account = source as? any AuthenticatingSource {
+            let response = try await SourceAuthenticator.shared.page(at: url, from: account)
+            return try source.videos(inListing: response)
+        }
+
         let response = try await fetch(url, from: source, intent: "\(feed.name) p\(page)")
         let videos = try source.videos(inListing: response)
         try note(videos.count, for: response, intent: "\(feed.name) p\(page)", source: source, page: page)
