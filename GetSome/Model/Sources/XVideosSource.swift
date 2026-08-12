@@ -289,3 +289,54 @@ struct XVideosSource: ContentSource {
         return total
     }
 }
+
+// MARK: - Signing in
+
+/// Signing in to xvideos.
+///
+/// The sign-in form posts back to the same page it's served from, carrying a
+/// one-time `csrf_token` that only exists on that page — so a sign-in is always
+/// two requests: fetch the form, then post it.
+///
+/// Notably the form itself has no CAPTCHA. The page has one, but it belongs to the
+/// sign-up and lost-password forms; the sign-in fieldset has none.
+extension XVideosSource: AuthenticatingSource {
+    var signInURL: URL { homeURL.appending(path: "account") }
+
+    func signInToken(in html: String) -> String? {
+        // `value` comes before `name` in the markup, and the page carries a second
+        // csrf_token for the lost-password form — so this anchors on the field name
+        // and reads backwards, rather than taking the first token it sees.
+        HTMLScanner.firstMatch(
+            of: #"value="([^"]*)"[^>]*name="signin-form\[csrf_token\]""#, in: html
+        )
+    }
+
+    func signInBody(username: String, password: String, token: String) -> Data {
+        // The site names every field with a `signin-form[...]` prefix, and sends the
+        // empty hidden fields too — a partial form is rejected.
+        let fields = [
+            ("signin-form[csrf_token]", token),
+            ("signin-form[votes]", ""),
+            ("signin-form[subs]", ""),
+            ("signin-form[post_referer]", ""),
+            ("signin-form[login]", username),
+            ("signin-form[password]", password),
+            ("signin-form[rememberme]", "1")
+        ]
+        var allowed = CharacterSet.alphanumerics
+        allowed.insert(charactersIn: "-._~")
+        let body = fields.map { name, value in
+            let key = name.addingPercentEncoding(withAllowedCharacters: allowed) ?? name
+            let encoded = value.addingPercentEncoding(withAllowedCharacters: allowed) ?? value
+            return "\(key)=\(encoded)"
+        }.joined(separator: "&")
+        return Data(body.utf8)
+    }
+
+    func isSignedIn(in html: String) -> Bool {
+        // The sign-in form is served to anyone who isn't signed in — including on
+        // the account pages themselves — so its absence is the signal.
+        !html.contains("signin-form[password]")
+    }
+}
