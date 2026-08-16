@@ -6,6 +6,7 @@ A view that loads a video's poster image from the source site.
 */
 
 import SwiftUI
+import ImageIO
 
 /// A view that loads a video's poster image from the source site.
 ///
@@ -31,7 +32,7 @@ struct PosterImageView: View {
                     .resizable()
                     .aspectRatio(contentMode: contentMode)
             } else {
-                placeholder(systemImage: didFail ? "photo.badge.exclamationmark" : "play.rectangle")
+                placeholder
             }
         }
         .task(id: url) {
@@ -45,7 +46,7 @@ struct PosterImageView: View {
         guard let url else { return }
 
         let data = await ContentClient.shared.imageData(at: url, from: sourceID ?? "")
-        guard let data, let platformImage = PlatformImage(data: data) else {
+        guard let data, let platformImage = Self.decodedImage(from: data) else {
             didFail = true
             return
         }
@@ -54,13 +55,46 @@ struct PosterImageView: View {
         }
     }
 
-    private func placeholder(systemImage: String) -> some View {
+    /// Decodes poster bytes at card size rather than full size.
+    ///
+    /// Every visible cell used to decode its poster at the CDN's native
+    /// resolution and let the GPU scale it down — dozens of times per screen of
+    /// scrolling, which is the kind of steady background work a phone answers
+    /// with heat. 600 pixels comfortably covers the widest card on the densest
+    /// display, and 900 leaves headroom for the hero, whose source images are
+    /// barely bigger than that anyway.
+    private static func decodedImage(from data: Data) -> PlatformImage? {
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: 900
+        ]
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil),
+              let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
+            return PlatformImage(data: data)
+        }
+        #if os(macOS)
+        return PlatformImage(cgImage: cgImage, size: .zero)
+        #else
+        return PlatformImage(cgImage: cgImage)
+        #endif
+    }
+
+    /// While loading, a quiet gradient rather than an icon: a grid of icons reads
+    /// as a screen full of broken images when it's really just a slow network.
+    /// Only an actual failure earns a symbol.
+    private var placeholder: some View {
         ZStack {
-            Rectangle()
-                .fill(.quaternary)
-            Image(systemName: systemImage)
-                .font(.title2)
-                .foregroundStyle(.tertiary)
+            LinearGradient(
+                colors: [Color(white: 0.16), Color(white: 0.10)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            if didFail {
+                Image(systemName: "photo.badge.exclamationmark")
+                    .font(.title2)
+                    .foregroundStyle(.tertiary)
+            }
         }
     }
 }

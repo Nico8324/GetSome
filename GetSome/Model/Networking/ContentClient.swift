@@ -31,6 +31,11 @@ actor ContentClient {
     private var imageOrder = [URL]()
     private let imageCacheLimit = 300
 
+    /// In-flight GET requests keyed by URL, so identical simultaneous requests
+    /// coalesce to a single network call. A second caller awaits the first's task
+    /// instead of issuing a duplicate request.
+    private var inFlight = [URL: Task<SourceResponse, Error>]()
+
     init(session: URLSession? = nil) {
         if let session {
             self.session = session
@@ -41,6 +46,12 @@ actor ContentClient {
             configuration.timeoutIntervalForRequest = 30
             self.session = URLSession(configuration: configuration)
         }
+
+        // Prune the disk cache once at init time, off the current task so it
+        // doesn't block startup. Utility priority keeps it out of the way.
+        Task.detached(priority: .utility) {
+            PosterDiskCache.prune()
+        }
     }
 
     /// Loads a page of videos from the specified feed.
@@ -48,6 +59,9 @@ actor ContentClient {
     ///   - feed: The feed to load. Its source must be one the app knows.
     ///   - page: A one-based page number.
     func videos(for feed: Feed, page: Int = 1) async throws -> [Video] {
+        if feed.isMerged {
+            return try await mergedVideos(for: feed, page: page)
+        }
         let source = try source(of: feed)
         // Asked of `listingRequest`, not `listingURL`: a feed that is a POST has no
         // listing URL at all, and checking the URL first declared it unsupported
@@ -107,6 +121,56 @@ actor ContentClient {
         return videos
     }
 
+    /// Loads the same page from every site that publishes this listing, interleaved.
+    ///
+    /// Each site paginates on its own, so page *n* of a merged feed is page *n* of
+    /// each member — the pages stay aligned however differently the sites number
+    /// their results. Sites are fetched concurrently and a failure is tolerated: one
+    /// site being down shouldn't empty a shelf the other three could fill. The
+    /// request only fails when every site did.
+    private func mergedVideos(for feed: Feed, page: Int) async throws -> [Video] {
+        let members = ContentSources.members(of: feed)
+        guard !members.isEmpty else { throw ContentError.unsupportedFeed(feed.name) }
+
+        let outcomes = await withTaskGroup(of: (Int, Result<[Video], Error>).self) { group in
+            for (index, member) in members.enumerated() {
+                group.addTask {
+                    do {
+                        return (index, .success(try await self.videos(for: member, page: page)))
+                    } catch {
+                        return (index, .failure(error))
+                    }
+                }
+            }
+            var collected = [(Int, Result<[Video], Error>)]()
+            for await outcome in group { collected.append(outcome) }
+            return collected
+        }
+
+        var pages = Array(repeating: [Video](), count: members.count)
+        var firstError: Error?
+        for (index, outcome) in outcomes {
+            switch outcome {
+            case .success(let videos): pages[index] = videos
+            case .failure(let error): if firstError == nil { firstError = error }
+            }
+        }
+
+        // Round-robin, so the shelf reads as one collection rather than four sites
+        // laid end to end. Members arrive with the person's chosen site first, which
+        // makes it the one they see without scrolling.
+        var interleaved = [Video]()
+        let longest = pages.map(\.count).max() ?? 0
+        for position in 0..<longest {
+            for videos in pages where position < videos.count {
+                interleaved.append(videos[position])
+            }
+        }
+
+        if interleaved.isEmpty, let firstError { throw firstError }
+        return interleaved
+    }
+
     /// Loads a page of videos that match the specified text.
     /// - Parameters:
     ///   - query: The text to search for.
@@ -122,6 +186,53 @@ actor ContentClient {
         let videos = try source.videos(inListing: response)
         try note(videos.count, for: response, intent: "search “\(query)” p\(page)", source: source, page: page)
         return videos
+    }
+
+    /// Searches every site that can search, interleaved the way a merged feed is.
+    ///
+    /// A keyword belongs to the site that published it, but the thing it names
+    /// doesn't: "fishnet" is a real search term on all four. Asking only the site a
+    /// tag came from meant the other three catalogs stayed invisible behind a chip
+    /// that looked like it covered everything. Sites that return nothing for a term
+    /// they don't use simply contribute nothing.
+    func videos(matchingEverywhere query: String, page: Int = 1) async throws -> [Video] {
+        let sources = ContentSources.all.filter(\.supportsSearch)
+        guard !sources.isEmpty else { return [] }
+
+        let outcomes = await withTaskGroup(of: (Int, Result<[Video], Error>).self) { group in
+            for (index, source) in sources.enumerated() {
+                group.addTask {
+                    do {
+                        return (index, .success(try await self.videos(matching: query, in: source.id, page: page)))
+                    } catch {
+                        return (index, .failure(error))
+                    }
+                }
+            }
+            var collected = [(Int, Result<[Video], Error>)]()
+            for await outcome in group { collected.append(outcome) }
+            return collected
+        }
+
+        var pages = Array(repeating: [Video](), count: sources.count)
+        var firstError: Error?
+        for (index, outcome) in outcomes {
+            switch outcome {
+            case .success(let videos): pages[index] = videos
+            case .failure(let error): if firstError == nil { firstError = error }
+            }
+        }
+
+        var interleaved = [Video]()
+        let longest = pages.map(\.count).max() ?? 0
+        for position in 0..<longest {
+            for videos in pages where position < videos.count {
+                interleaved.append(videos[position])
+            }
+        }
+
+        if interleaved.isEmpty, let firstError { throw firstError }
+        return interleaved
     }
 
     /// The most ids to resolve for one page of a listing that publishes ids alone.
@@ -282,15 +393,62 @@ actor ContentClient {
     func imageData(at url: URL, from sourceID: String) async -> Data? {
         if let cached = imageCache[url] { return cached }
 
+        // Check the disk cache before making a network request. A hit populates
+        // the memory cache so it's available for the lifetime of this session.
+        if let diskData = PosterDiskCache.data(for: url) {
+            imageCache[url] = diskData
+            imageOrder.append(url)
+            if imageOrder.count > imageCacheLimit {
+                imageCache.removeValue(forKey: imageOrder.removeFirst())
+            }
+            return diskData
+        }
+
         let request = ContentSources.source(with: sourceID)?.request(for: url) ?? URLRequest(url: url)
         guard let data = try? await session.data(for: request).0, !data.isEmpty else { return nil }
 
+        // Store the fetched image in both caches for quick access in this session
+        // and persistence across launches.
         imageCache[url] = data
         imageOrder.append(url)
         if imageOrder.count > imageCacheLimit {
             imageCache.removeValue(forKey: imageOrder.removeFirst())
         }
+        PosterDiskCache.store(data, for: url)
         return data
+    }
+
+    /// Warms the image cache with poster thumbnails for upcoming videos.
+    ///
+    /// A grid loads posters as cells appear, so every scroll begins with gray
+    /// placeholders. Prefetching the next screenful hides the network latency and
+    /// makes scrolling feel immediate. Failures are best-effort and ignored.
+    func prefetchPosters(for videos: [Video]) async {
+        guard !videos.isEmpty else { return }
+
+        // Collect URLs to prefetch.
+        var urlsToFetch: [(URL, String)] = []
+        for video in videos {
+            if let url = video.thumbnailURL {
+                urlsToFetch.append((url, video.sourceID))
+            }
+        }
+
+        guard !urlsToFetch.isEmpty else { return }
+
+        // Fetch at most 4 concurrent images to avoid overwhelming the network.
+        let batchSize = 4
+        for batch in stride(from: 0, to: urlsToFetch.count, by: batchSize) {
+            let end = min(batch + batchSize, urlsToFetch.count)
+
+            await withTaskGroup(of: Void.self) { group in
+                for (url, sourceID) in urlsToFetch[batch..<end] {
+                    group.addTask {
+                        _ = await self.imageData(at: url, from: sourceID)
+                    }
+                }
+            }
+        }
     }
 
     /// Discards everything the client has cached.
@@ -298,14 +456,70 @@ actor ContentClient {
         resolvedDetails.removeAll()
         imageCache.removeAll()
         imageOrder.removeAll()
+        PosterDiskCache.removeAll()
     }
 
     // MARK: - Requests
 
+    /// Fetches a page, coalescing identical concurrent GET requests and retrying
+    /// transient failures once.
+    ///
+    /// For GET requests with no body, a second simultaneous request for the same URL
+    /// awaits the first's task instead of issuing a duplicate. For non-GET requests
+    /// (which have an httpBody), each request proceeds independently.
     private func fetch(
         _ url: URL,
         from source: any ContentSource,
         intent: String
+    ) async throws -> SourceResponse {
+        let request = source.request(for: url)
+
+        // Only coalesce GET requests with no body.
+        if request.httpBody == nil {
+            // Check if a request for this URL is already in flight.
+            if let existingTask = inFlight[url] {
+                return try await existingTask.value
+            }
+
+            // Create and store a task for coalescing.
+            let task = Task {
+                try await performFetch(url, from: source, intent: intent)
+            }
+            inFlight[url] = task
+
+            do {
+                let result = try await task.value
+                inFlight.removeValue(forKey: url)
+                return result
+            } catch {
+                inFlight.removeValue(forKey: url)
+                throw error
+            }
+        } else {
+            // Non-GET requests bypass coalescing.
+            return try await performFetch(url, from: source, intent: intent)
+        }
+    }
+
+    /// Performs a fetch with retry for transient failures.
+    ///
+    /// Retries once on transient network errors (timeout, lost connection, can't
+    /// connect) or on HTTP 5xx status codes. A transient hiccup shouldn't kill a
+    /// whole feed, but a systematic refusal (4xx) shouldn't be hammered either.
+    /// Waits 1.5 seconds between attempts.
+    private func performFetch(
+        _ url: URL,
+        from source: any ContentSource,
+        intent: String
+    ) async throws -> SourceResponse {
+        return try await performFetchWithRetry(url, from: source, intent: intent, attempt: 1)
+    }
+
+    private func performFetchWithRetry(
+        _ url: URL,
+        from source: any ContentSource,
+        intent: String,
+        attempt: Int
     ) async throws -> SourceResponse {
         let data: Data
         let status: Int?
@@ -315,6 +529,26 @@ actor ContentClient {
             data = body
             status = (response as? HTTPURLResponse)?.statusCode
             finalURL = response.url ?? url
+        } catch let error as URLError {
+            // Check for transient network errors on the first attempt.
+            if attempt == 1 && shouldRetry(error) {
+                // Log this failed attempt.
+                await RequestLog.shared.record(
+                    RequestRecord(sourceID: source.id, intent: intent, url: url, statusCode: nil,
+                                  byteCount: 0, parsedCount: nil, failure: error.localizedDescription,
+                                  date: .now)
+                )
+                // Wait before retrying.
+                try await Task.sleep(nanoseconds: 1_500_000_000)
+                return try await performFetchWithRetry(url, from: source, intent: intent, attempt: 2)
+            }
+            // Not retryable or second attempt failed.
+            await RequestLog.shared.record(
+                RequestRecord(sourceID: source.id, intent: intent, url: url, statusCode: nil,
+                              byteCount: 0, parsedCount: nil, failure: error.localizedDescription,
+                              date: .now)
+            )
+            throw error
         } catch {
             await RequestLog.shared.record(
                 RequestRecord(sourceID: source.id, intent: intent, url: url, statusCode: nil,
@@ -322,6 +556,20 @@ actor ContentClient {
                               date: .now)
             )
             throw error
+        }
+
+        // Check for server errors on the first attempt.
+        if let status, (500...599).contains(status), attempt == 1 {
+            logger.error("Request for \(url.absoluteString, privacy: .public) failed: \(status)")
+            // Log this failed attempt.
+            await RequestLog.shared.record(
+                RequestRecord(sourceID: source.id, intent: intent, url: url, statusCode: status,
+                              byteCount: data.count, parsedCount: nil,
+                              failure: "transient server error", date: .now)
+            )
+            // Wait before retrying.
+            try await Task.sleep(nanoseconds: 1_500_000_000)
+            return try await performFetchWithRetry(url, from: source, intent: intent, attempt: 2)
         }
 
         if let status, !(200..<300).contains(status) {
@@ -347,6 +595,16 @@ actor ContentClient {
 
         lastResponse = (source.id, intent, url, status, data)
         return SourceResponse(url: finalURL, data: data)
+    }
+
+    /// Returns whether a URLError is a transient network failure that warrants a retry.
+    private func shouldRetry(_ error: URLError) -> Bool {
+        switch error.code {
+        case .timedOut, .networkConnectionLost, .cannotConnectToHost:
+            return true
+        default:
+            return false
+        }
     }
 
     /// Describes what a page is built from, without keeping any of it.
