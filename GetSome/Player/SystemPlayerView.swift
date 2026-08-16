@@ -67,7 +67,7 @@ struct SystemPlayerView: UIViewControllerRepresentable {
     init(showContextualActions: Bool) {
         self.showContextualActions = showContextualActions
     }
-    
+
     func makeUIViewController(context: Context) -> AVPlayerViewController {
 
         // Create a player view controller.
@@ -82,11 +82,16 @@ struct SystemPlayerView: UIViewControllerRepresentable {
             controller.customInfoViewControllers = [upNextViewController]
         }
         #endif
-        
+
+        // iPhone's Up Next prompt and quality menu are deliberately NOT added here.
+        // AVPlayerViewController's content overlay view never receives touches on
+        // iOS — the transport chrome intercepts everything — so anything tappable
+        // has to live a layer up, in ``PlayerView``'s SwiftUI overlay.
+
         // Return the configured controller object.
         return controller
     }
-    
+
     func updateUIViewController(_ controller: UIViewControllerType, context: Context) {
         #if os(visionOS) || os(tvOS)
         Task { @MainActor in
@@ -94,7 +99,7 @@ struct SystemPlayerView: UIViewControllerRepresentable {
             if let upNextViewController {
                 controller.customInfoViewControllers = [upNextViewController]
             }
-            
+
             if let upNextAction, showContextualActions {
                 controller.contextualActions = [upNextAction]
             } else {
@@ -102,8 +107,9 @@ struct SystemPlayerView: UIViewControllerRepresentable {
             }
         }
         #endif
+
     }
-    
+
     // A view controller that presents a list of Up Next videos.
     var upNextViewController: UIViewController? {
         guard let video = model.currentItem else { return nil }
@@ -126,25 +132,31 @@ struct SystemPlayerView: UIViewControllerRepresentable {
         #else
         controller.preferredContentSize = CGSize(width: 600, height: 150)
         #endif
-        
+
         return controller
     }
-    
-    var upNextAction: UIAction? {
-        // If there's no video loaded, return `nil`.
-        guard let video = model.currentItem else { return nil }
 
-        // Find the next video to play in the saved list.
-        guard let index = playlist.firstIndex(where: { $0.videoID == video.id }),
+    /// The next video after the one currently playing, in the saved list. This is
+    /// the single source of truth behind tvOS and visionOS's Up Next tab and
+    /// contextual action, and the iPhone overlay reuses it rather than defining a
+    /// second notion of "what plays next".
+    var nextVideoInPlaylist: Video? {
+        guard let video = model.currentItem,
+              let index = playlist.firstIndex(where: { $0.videoID == video.id }),
               playlist.indices.contains(index + 1)
         else { return nil }
-        let nextVideo = playlist[index + 1].video
+        return playlist[index + 1].video
+    }
+
+    var upNextAction: UIAction? {
+        guard let nextVideo = nextVideoInPlaylist else { return nil }
 
         return UIAction(title: String(localized: "Play Next"), image: UIImage(systemName: "play.fill")) { _ in
             // Load the video for full-window presentation.
             model.loadVideo(nextVideo, presentation: .fullWindow)
         }
     }
+
 }
 
 #endif

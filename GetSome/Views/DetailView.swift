@@ -7,6 +7,7 @@ A view that presents the video content details.
 
 import SwiftUI
 import SwiftData
+import CoreMedia
 
 /// A view that presents the video content details.
 struct DetailView: View {
@@ -27,6 +28,9 @@ struct DetailView: View {
     @State private var playbackHeight: Int?
     @State private var detailError: String?
     @State private var viewSize: CGSize = CGSize(width: 0, height: 0)
+    @State private var uploaderName: String?
+    @State private var uploaderFeed: Feed?
+    @State private var sceneThumbnails: [URL] = []
 
     @Namespace private var namespace
 
@@ -45,9 +49,18 @@ struct DetailView: View {
                     TagView(tags: Array(video.keywords.prefix(4)))
 
                     if let detailError {
-                        Text(detailError)
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
+                        // The error and its exit in one place: most failures here
+                        // are a hiccup on the site's side, and re-entering the
+                        // screen was the only retry the app used to offer.
+                        HStack(spacing: Constants.genreSpacing) {
+                            Text(detailError)
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                            Button("Retry") {
+                                Task { await loadDetails() }
+                            }
+                            .font(.footnote.bold())
+                        }
                     }
 
                     HStack {
@@ -101,6 +114,71 @@ struct DetailView: View {
                             .font(.headline)
                         KeywordLinksView(sourceID: video.sourceID, keywords: video.keywords)
                     }
+
+                    if !sceneThumbnails.isEmpty {
+                        Text("Scenes")
+                            .font(.headline)
+
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: Constants.genreSpacing) {
+                                ForEach(Array(sceneThumbnails.enumerated()), id: \.element) { index, url in
+                                    Button {
+                                        player.loadVideo(video, presentation: .fullWindow,
+                                                         startTime: sceneStart(at: index))
+                                    } label: {
+                                        PosterImageView(url: url, sourceID: video.sourceID)
+                                            .frame(width: 148, height: 84)
+                                            .clipShape(RoundedRectangle(cornerRadius: Constants.cornerRadius))
+                                            .overlay(alignment: .bottomTrailing) {
+                                                if let label = sceneTimeLabel(at: index) {
+                                                    Text(label)
+                                                        .font(.caption2.monospacedDigit())
+                                                        .padding(.horizontal, 4)
+                                                        .padding(.vertical, 2)
+                                                        .background(.black.opacity(0.6), in: .rect(cornerRadius: 4))
+                                                        .padding(4)
+                                                }
+                                            }
+                                    }
+                                    .buttonStyle(.plain)
+                                    .disabled(!video.isAvailable || video.duration <= 0)
+                                    .accessibilityLabel(sceneTimeLabel(at: index).map {
+                                        String(localized: "Play from \($0)",
+                                               comment: "An accessible label for a scene thumbnail that starts playback at a time")
+                                    } ?? String(localized: "Scenes"))
+                                }
+                            }
+                        }
+                        .scrollClipDisabled()
+                    }
+
+                    if let feed = uploaderFeed {
+                        Text("Uploader")
+                            .font(.headline)
+                        // Pushed directly rather than through NavigationNode.feed:
+                        // that route resolves its Feed from the static registry,
+                        // and an uploader's feed is built on the fly from the watch
+                        // page — the registry has never heard of it.
+                        NavigationLink {
+                            // isRoot false: this sits inside the existing stack,
+                            // and a nested NavigationStack would trap navigation.
+                            FeedView(feed: feed, namespace: namespace, isRoot: false)
+                                #if os(iOS)
+                                .toolbarRole(.editor)
+                                #endif
+                        } label: {
+                            HStack {
+                                Text(feed.name)
+                                    .foregroundStyle(.tint)
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.footnote.weight(.semibold))
+                                    .foregroundStyle(.secondary)
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
                 .padding(isCompact ? Constants.detailCompactPadding : Constants.detailPadding)
                 .padding(.bottom, isCompact ? Constants.detailCompactPadding : 0)
@@ -153,6 +231,24 @@ struct DetailView: View {
         return parts.filter { !$0.isEmpty }.joined(separator: " | ")
     }
 
+    /// The moment a scene thumbnail stands for.
+    ///
+    /// Sites publish these as a strip without saying when each was taken, so the
+    /// offset is inferred: *n* thumbnails spread evenly across the running time.
+    /// That's an approximation, and it's why tapping one is offered as "start
+    /// around here" rather than as frame-accurate seeking — close enough to land in
+    /// the right scene, which is the whole point of the strip.
+    private func sceneStart(at index: Int) -> CMTime? {
+        guard video.duration > 0, !sceneThumbnails.isEmpty else { return nil }
+        let seconds = Double(video.duration) * Double(index) / Double(sceneThumbnails.count)
+        return CMTime(seconds: seconds, preferredTimescale: 600)
+    }
+
+    private func sceneTimeLabel(at index: Int) -> String? {
+        guard let start = sceneStart(at: index) else { return nil }
+        return Duration.seconds(start.seconds).formatted(.time(pattern: .minuteSecond))
+    }
+
     private var accessibleMetadata: String {
         String(
             localized: "\(video.formattedDuration) long, \(video.formattedViews)",
@@ -174,6 +270,9 @@ struct DetailView: View {
                 video = video.merging(complete)
             }
             related = details.related
+            uploaderName = details.uploaderName
+            uploaderFeed = details.uploaderFeed
+            sceneThumbnails = details.sceneThumbnailURLs
             playbackHeight = video.source
                 .flatMap { $0.preferredStream(from: details.sources) }
                 .map(\.height)
@@ -205,8 +304,6 @@ struct DetailView: View {
 
 /// A view that presents a video's keywords as links to a search for each one.
 struct KeywordLinksView: View {
-    @Environment(TranslationStore.self) private var translator
-
     /// The source to search. A keyword only means something on the site it came from.
     let sourceID: String
     let keywords: [String]
@@ -215,10 +312,15 @@ struct KeywordLinksView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Constants.genreSpacing) {
                 ForEach(keywords, id: \.self) { keyword in
-                    NavigationLink(value: NavigationNode.tag(sourceID: sourceID, keyword: keyword)) {
-                        // Search the site with the original word — a site only
-                        // knows its own keywords.
-                        Text(translator.text(for: keyword))
+                    // Searched everywhere, not just on the site that published it:
+                    // the word is this site's, but what it names isn't. See
+                    // ContentClient.videos(matchingEverywhere:).
+                    NavigationLink(value: NavigationNode.tag(sourceID: FeedStore.allSitesID, keyword: keyword)) {
+                        // Shown as published, never translated: the chip triggers
+                        // a search, and a site only knows its own keywords — while
+                        // machine translation, given a bare tag, turns "fishnet"
+                        // into fishing equipment. See TagView.
+                        Text(keyword)
                             .font(.caption)
                             .padding(.horizontal, Constants.genreHorizontalPadding * 2)
                             .padding(.vertical, Constants.genreVerticalPadding * 2)

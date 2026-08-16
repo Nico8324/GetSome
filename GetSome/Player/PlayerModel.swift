@@ -30,6 +30,11 @@ enum Presentation {
     /// model container exists. Nothing is recorded until it does.
     @ObservationIgnored var historyContext: ModelContext?
 
+    /// The watch history entry for the currently playing video, used to record and
+    /// restore playback position. Populated when loadVideo records a watch and cleared
+    /// when playback ends or a new video loads.
+    @ObservationIgnored var currentWatchedVideo: WatchedVideo?
+
     /// The presentation in which to display the current media.
     ///
     /// On iPhone this also decides whether the app may rotate: the rest of the app
@@ -60,6 +65,27 @@ enum Presentation {
 
     /// A Boolean value that indicates whether the player should propose playing the next saved video.
     private(set) var shouldProposeNextVideo = false
+
+    /// A live quality ceiling chosen from the AVKit quality menu during this session.
+    ///
+    /// `nil` means no live choice has been made, so the profile's Maximum Quality
+    /// setting applies as usual. `.some(nil)` means the person explicitly chose
+    /// Auto from the menu, which removes any ceiling regardless of the profile
+    /// setting. Once set, the choice carries forward to every subsequent video
+    /// loaded this session, not just the item playing when it was made.
+    @ObservationIgnored private var sessionQualityCeilingHeight: Int??
+
+    /// The video for which the app has already attempted a mid-play recovery.
+    ///
+    /// This app's streams are signed URLs that can expire mid-play, and an expired
+    /// URL looks identical to a genuinely broken video — the only way to tell them
+    /// apart is to retry once. This remembers which video already got that retry
+    /// so a second failure gives up instead of retrying forever.
+    @ObservationIgnored private var recoveryAttemptedVideoID: VideoID?
+
+    /// Whether the currently loaded video is playing its short preview clip rather
+    /// than the full video, so a mid-play recovery re-resolves the same kind of stream.
+    @ObservationIgnored private var isPlayingPreview = false
 
     /// An object that manages the playback of a video's media.
     private var player: AVPlayer
@@ -181,6 +207,16 @@ enum Presentation {
             }
         }
 
+        // Observe this notification as one of two signals — alongside the item
+        // status check in `resolveAndEnqueue` — that playback has failed. A signed
+        // stream URL expiring mid-play surfaces this way just as often as a genuine
+        // playback error does, and only a retry can tell the two apart.
+        Task {
+            for await notification in center.notifications(named: .AVPlayerItemFailedToPlayToEndTime) {
+                handlePlaybackFailure(for: notification.object as? AVPlayerItem)
+            }
+        }
+
         #if !os(macOS)
         // Observe audio session interruptions.
         Task {
@@ -253,24 +289,39 @@ enum Presentation {
     ///   - autoplay: A Boolean value that indicates whether to automatically play the content when presented.
     ///   - usePreview: A Boolean value that indicates whether to play the site's short preview clip
     ///     instead of the full video.
+    ///   - startTime: A moment to open at, chosen deliberately — by tapping a scene
+    ///     thumbnail, say. It takes precedence over the saved watch position, which
+    ///     is what "resume" means and is not what was asked for here.
     func loadVideo(
         _ video: Video,
         presentation: Presentation = .inline,
         autoplay: Bool = true,
-        usePreview: Bool = false
+        usePreview: Bool = false,
+        startTime: CMTime? = nil
     ) {
+        // Save the playback position of the currently playing video before loading
+        // a new one, so switching videos doesn't abandon the user's progress.
+        updatePlaybackPosition()
+        currentWatchedVideo = nil
+
         // Update the model state for the request.
         currentItem = video
         shouldAutoPlay = autoplay
         isPlaybackComplete = false
         loadError = nil
+        // A new video gets its own fresh recovery attempt, independent of whatever
+        // happened to the one playing before it.
+        recoveryAttemptedVideoID = nil
+        isPlayingPreview = usePreview
 
         // Recorded on load rather than on first frame: a video that fails to resolve
         // was still something a person chose to watch, and history is more useful
         // for retracing that choice than for proving playback happened. A preview
-        // clip isn't a watch, though.
+        // clip isn't a watch, though. Fetch the record so playback position can be
+        // restored from a previous watch.
         if !usePreview {
             historyContext?.recordWatch(video)
+            fetchWatchedVideoForResume(video)
         }
 
         loadTask?.cancel()
@@ -279,7 +330,8 @@ enum Presentation {
             if presentation == .fullWindow {
                 await coordinator.coordinatePlaybackOfVideo(video)
             }
-            await resolveAndEnqueue(video, usePreview: usePreview, autoplay: autoplay)
+            await resolveAndEnqueue(video, usePreview: usePreview, autoplay: autoplay,
+                                    resumeTime: startTime)
         }
 
         // In visionOS, configure the spatial experience for either .inline or .fullWindow playback.
@@ -290,7 +342,11 @@ enum Presentation {
     }
 
     /// Resolves a media URL for the video and hands it to the player.
-    private func resolveAndEnqueue(_ video: Video, usePreview: Bool, autoplay: Bool) async {
+    /// - Parameter resumeTime: A position to open at instead of the saved watch
+    ///   position — either where playback was when a stream failed mid-play, or a
+    ///   moment the person picked from the scene thumbnails. Applied once the new
+    ///   item reports itself ready.
+    private func resolveAndEnqueue(_ video: Video, usePreview: Bool, autoplay: Bool, resumeTime: CMTime? = nil) async {
         isResolvingStream = true
         defer { isResolvingStream = false }
 
@@ -321,6 +377,27 @@ enum Presentation {
         player.replaceCurrentItem(with: playerItem)
         logger.debug("🍿 \(video.name) enqueued for playback.")
 
+        // Observe the player item's status to seek to the saved playback position
+        // once it's ready to play. This ensures the item is prepared before seeking.
+        // A status of `.failed` is the other of the two signals `handlePlaybackFailure`
+        // watches for — the notification-based one fires for a mid-stream failure,
+        // this one catches a stream that never becomes playable in the first place.
+        Task { @MainActor in
+            for await status in playerItem.publisher(for: \.status).values {
+                if status == .readyToPlay {
+                    if let resumeTime {
+                        _ = await player.seek(to: resumeTime, toleranceBefore: .zero, toleranceAfter: .zero)
+                    } else {
+                        seekToSavedPosition()
+                    }
+                }
+                if status == .failed { handlePlaybackFailure(for: playerItem) }
+                // Either outcome ends the watch: a failed item can never become
+                // seekable, and leaving the loop running would keep it alive.
+                if status != .unknown { break }
+            }
+        }
+
         if autoplay {
             player.play()
         }
@@ -338,7 +415,7 @@ enum Presentation {
     /// alternative is a resource-loader delegate, which for HLS means intercepting a
     /// custom scheme and re-serving every playlist and segment by hand. This app has no
     /// App Store path — see NOTICE.md — so the header key is the proportionate choice.
-    private static func asset(at url: URL, from sourceID: String) -> AVURLAsset {
+    static func asset(at url: URL, from sourceID: String) -> AVURLAsset {
         let headers = ContentSources.source(with: sourceID)?.playbackHeaders(for: url) ?? [:]
         guard !headers.isEmpty else { return AVURLAsset(url: url) }
         return AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
@@ -348,15 +425,118 @@ enum Presentation {
     ///
     /// For a fixed rendition the source already chose one, but an HLS manifest
     /// leaves the choice to the player — so without this the setting would appear
-    /// to do nothing on sources that serve adaptive streams.
+    /// to do nothing on sources that serve adaptive streams. A live choice made
+    /// through the AVKit quality menu during this session takes priority over the
+    /// profile setting, since it's the more recent expression of what the person wants.
     private func applyQualityCeiling(to item: AVPlayerItem) {
+        if let sessionOverride = sessionQualityCeilingHeight {
+            guard let height = sessionOverride else { return }
+            item.preferredMaximumResolution = Self.resolution(forHeight: height)
+            return
+        }
         let quality = PlaybackSettings.maximumQuality
         guard quality != .auto else { return }
-        let height = Double(quality.ceiling)
-        item.preferredMaximumResolution = CGSize(width: height * 16 / 9, height: height)
+        item.preferredMaximumResolution = Self.resolution(forHeight: quality.ceiling)
+    }
+
+    /// Changes the quality ceiling for the video playing right now, and remembers the
+    /// choice for every subsequent video loaded this session.
+    ///
+    /// This exists alongside the profile's Maximum Quality setting to let AVKit's
+    /// quality menu switch resolution live, mid-stream, without waiting for the next
+    /// video to load. `height` of `nil` selects Auto, removing any ceiling.
+    func applyQualityCeiling(height: Int?) {
+        sessionQualityCeilingHeight = height
+        guard let item = player.currentItem else { return }
+        if let height {
+            item.preferredMaximumResolution = Self.resolution(forHeight: height)
+            // AVKit gives no way to ask an adaptive stream what it's actually
+            // rendering, so the chosen ceiling is the best available estimate —
+            // the same approximation `currentHeight`'s doc comment already accepts.
+            currentHeight = height
+        } else {
+            item.preferredMaximumResolution = .zero
+            // Auto means genuinely unknown until the next stream resolves, rather
+            // than a guess this app has no way to verify.
+            currentHeight = nil
+        }
+    }
+
+    /// The maximum resolution to hand `AVPlayerItem.preferredMaximumResolution` for a
+    /// given height ceiling, assuming a 16:9 aspect ratio.
+    private static func resolution(forHeight height: Int) -> CGSize {
+        let height = Double(height)
+        return CGSize(width: height * 16 / 9, height: height)
+    }
+
+    /// Handles a player item failure, reported either as `.status == .failed` or via
+    /// the `AVPlayerItemFailedToPlayToEndTime` notification.
+    ///
+    /// This app's streams are signed URLs the source expires after a while, and an
+    /// expired URL fails in exactly the way a genuinely broken video does — there's
+    /// no error code that tells them apart. So the first failure for a video gets
+    /// the benefit of the doubt: the app remembers the playback position, re-resolves
+    /// a fresh stream the same way `loadVideo` does, and resumes from there. Only a
+    /// second failure for the same video is treated as a real error.
+    private func handlePlaybackFailure(for failedItem: AVPlayerItem?) {
+        // Ignore a failure reported for an item that isn't current any more — it was
+        // already superseded by a new load or a previous recovery attempt.
+        guard let failedItem, failedItem === player.currentItem, let video = currentItem else { return }
+
+        guard recoveryAttemptedVideoID != video.id else {
+            loadError = failedItem.error?.localizedDescription
+                ?? String(localized: "This video couldn’t be played.", comment: "A generic video playback error")
+            return
+        }
+        recoveryAttemptedVideoID = video.id
+
+        let resumeTime = player.currentTime()
+        loadTask?.cancel()
+        loadTask = Task {
+            await resolveAndEnqueue(video, usePreview: isPlayingPreview, autoplay: true, resumeTime: resumeTime)
+        }
+    }
+
+    /// Fetches and stores the watch history entry for a video so that playback position
+    /// can be restored from a previous watch. Does nothing if history context is unavailable.
+    private func fetchWatchedVideoForResume(_ video: Video) {
+        guard let context = historyContext else { return }
+        let sourceID = video.sourceID
+        let itemID = video.itemID
+        let descriptor = FetchDescriptor<WatchedVideo>(
+            predicate: #Predicate { $0.sourceID == sourceID && $0.itemID == itemID }
+        )
+        if let existing = try? context.fetch(descriptor).first {
+            currentWatchedVideo = existing
+        }
+    }
+
+    /// Seeks to a saved playback position if one exists and meets resume criteria.
+    /// Watches with a saved position are resumed from that point; videos without
+    /// a saved position or those never seen before play from the beginning.
+    ///
+    /// The player must be ready to seek (player item status is `readyToPlay`).
+    private func seekToSavedPosition() {
+        guard let watched = currentWatchedVideo,
+              let duration = player.currentItem?.duration,
+              duration.isNumeric else { return }
+
+        let position = watched.playbackPosition
+        let durationSeconds = Int(duration.seconds)
+
+        // Resume only if position is past the 30-second mark and not within 60 seconds
+        // of the end. Skip resume if duration is zero (unknown) to avoid seeking beyond
+        // the actual content length.
+        guard position > 30 && (durationSeconds == 0 || position < durationSeconds - 60) else { return }
+
+        let targetTime = CMTime(seconds: Double(position), preferredTimescale: 1000)
+        player.seek(to: targetTime, toleranceBefore: .zero, toleranceAfter: .zero) { _ in
+            // Seeking complete; playback will resume from the saved position.
+        }
     }
 
     /// Clears any loaded media and resets the player model to its default state.
+    /// Saves the final playback position before teardown so progress isn't lost.
     func reset() {
         loadTask?.cancel()
         loadTask = nil
@@ -364,6 +544,10 @@ enum Presentation {
         loadError = nil
         currentHeight = nil
         isResolvingStream = false
+        // Save the final position before clearing the watch entry, so the user's
+        // place is preserved even if they navigate away mid-playback.
+        updatePlaybackPosition()
+        currentWatchedVideo = nil
         player.replaceCurrentItem(with: nil)
         playerUI = nil
         playerUIDelegate = nil
@@ -449,6 +633,10 @@ enum Presentation {
     }
 
     func pause() {
+        // Record the current playback position before pausing, so the user's place
+        // is captured even if the app is backgrounded or the player is closed
+        // before the periodic observer fires.
+        updatePlaybackPosition()
         player.pause()
     }
 
@@ -457,9 +645,15 @@ enum Presentation {
     }
 
     // MARK: - Time Observation
+
+    /// The timestamp of the last playback position update, used to throttle
+    /// position recording to approximately every 10 seconds.
+    @ObservationIgnored private var lastPositionUpdate: Date = Date.distantPast
+
     private func addTimeObserver() {
         removeTimeObserver()
-        // Observe the player's timing once every second.
+        // Observe the player's timing once every second. The periodic observer updates
+        // playback position and checks whether to propose the next video.
         let timeInterval = CMTime(value: 1, timescale: 1)
         timeObserver = player
             .addPeriodicTimeObserver(forInterval: timeInterval, queue: .main) { time in
@@ -470,8 +664,30 @@ enum Presentation {
                             self.shouldProposeNextVideo = isInProposalRange
                         }
                     }
+                    // Update playback position periodically (approximately every 10 seconds)
+                    // to record the current playback location.
+                    self.updatePlaybackPositionIfNeeded(time)
                 }
             }
+    }
+
+    /// Updates the playback position in the watch history if at least 10 seconds have
+    /// elapsed since the last update. This throttles writes to the history context.
+    private func updatePlaybackPositionIfNeeded(_ time: CMTime) {
+        let now = Date.now
+        if now.timeIntervalSince(lastPositionUpdate) >= 10 {
+            lastPositionUpdate = now
+            updatePlaybackPosition(time)
+        }
+    }
+
+    /// Records the current playback position into the watch history entry. If no watch
+    /// entry exists or no time is available, this does nothing.
+    private func updatePlaybackPosition(_ time: CMTime = .zero) {
+        guard let watched = currentWatchedVideo, let context = historyContext else { return }
+        let position = Int(time == .zero ? (player.currentTime().seconds) : time.seconds)
+        watched.playbackPosition = max(0, position)
+        try? context.save()
     }
 
     private func removeTimeObserver() {

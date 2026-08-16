@@ -38,6 +38,11 @@ final class WatchedVideo {
     /// When it was last watched. Rewatching moves an entry rather than adding one.
     var watchedAt: Date = Date.now
 
+    /// The playback position in seconds where the user paused or navigated away.
+    /// Allows resuming from that point on the next view, without rewinding through
+    /// content already seen. Remains at zero for newly watched videos.
+    var playbackPosition: Int = 0
+
     init(video: Video, watchedAt: Date = .now) {
         self.sourceID = video.sourceID
         self.itemID = video.itemID
