@@ -80,7 +80,68 @@ enum CredentialStore {
         return SecItemCopyMatching(query as CFDictionary, nil) == errSecSuccess
     }
 
+    // MARK: - Sessions
+
+    /// Saves the cookies a signed-in session depends on.
+    ///
+    /// A session is as good as a password until it expires, so it lives in the
+    /// keychain beside one, device-only and out of backups.
+    static func saveSession(_ cookies: [HTTPCookie], for sourceID: String) {
+        let properties = cookies.compactMap(\.properties)
+        guard !properties.isEmpty,
+              let data = try? NSKeyedArchiver.archivedData(withRootObject: properties,
+                                                           requiringSecureCoding: false) else { return }
+        removeSession(for: sourceID)
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: sessionService,
+            kSecAttrAccount as String: sourceID,
+            kSecValueData as String: data,
+            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+        ]
+        SecItemAdd(query as CFDictionary, nil)
+    }
+
+    /// Returns the cookies stored for a site's session.
+    static func session(for sourceID: String) -> [HTTPCookie] {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: sessionService,
+            kSecAttrAccount as String: sourceID,
+            kSecReturnData as String: true
+        ]
+        var item: CFTypeRef?
+        guard SecItemCopyMatching(query as CFDictionary, &item) == errSecSuccess,
+              let data = item as? Data,
+              let properties = try? NSKeyedUnarchiver.unarchivedObject(
+                  ofClasses: [NSArray.self, NSDictionary.self, NSString.self, NSNumber.self, NSDate.self],
+                  from: data) as? [[HTTPCookiePropertyKey: Any]]
+        else { return [] }
+        return properties.compactMap(HTTPCookie.init(properties:))
+    }
+
+    /// Forgets a site's session.
+    static func removeSession(for sourceID: String) {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: sessionService,
+            kSecAttrAccount as String: sourceID
+        ]
+        SecItemDelete(query as CFDictionary)
+    }
+
+    /// Whether a site has a stored session, which is what the account feeds need.
+    static func hasSession(for sourceID: String) -> Bool {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: sessionService,
+            kSecAttrAccount as String: sourceID
+        ]
+        return SecItemCopyMatching(query as CFDictionary, nil) == errSecSuccess
+    }
+
     private static let service = "com.getsome.GetSome.siteCredentials"
+    private static let sessionService = "com.getsome.GetSome.siteSessions"
 }
 
 /// Why storing or using a credential failed.
@@ -90,6 +151,7 @@ enum CredentialError: LocalizedError {
     case rejected
     case rejectedWithReason(String)
     case unrecognizedResponse
+    case captchaRequired(String)
 
     var errorDescription: String? {
         switch self {
@@ -106,6 +168,11 @@ enum CredentialError: LocalizedError {
             // The site's own words, which say more than a generic refusal can —
             // an unverified address or a locked account read very differently.
             reason
+        case .captchaRequired(let name):
+            String(localized: """
+                \(name) is asking for a CAPTCHA before it will accept a sign-in. \
+                This app can’t complete one — sign in on the site in a browser, then try again.
+                """, comment: "An error shown when a site demands a CAPTCHA to sign in")
         case .unrecognizedResponse:
             // Deliberately distinct from a rejection: this means the app couldn't
             // tell whether the sign-in worked, which is a different thing to fix.

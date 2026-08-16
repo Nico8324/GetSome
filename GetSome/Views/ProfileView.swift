@@ -7,6 +7,8 @@ The profile and settings screen.
 
 import SwiftUI
 import SwiftData
+import LocalAuthentication
+import UniformTypeIdentifiers
 
 /// The profile and settings screen.
 ///
@@ -27,16 +29,14 @@ struct ProfileView: View {
     @Query(sort: \WatchedVideo.watchedAt, order: .reverse)
     private var watched: [WatchedVideo]
 
-    @State private var email = ""
-    @State private var password = ""
     @State private var isSigningIn = false
     @State private var isSignedIn = false
     @State private var signedInAs: String?
-    @State private var signInError: String?
 
     @AppStorage(ContentSources.primarySourceKey) private var primarySourceID = ContentSources.all[0].id
     @AppStorage(PlaybackSettings.maximumQualityKey) private var maximumQuality = StreamQuality.auto.rawValue
     @AppStorage("didConfirmAge") private var didConfirmAge = false
+    @AppStorage("lockRequiresBiometrics") private var lockRequiresBiometrics = false
 
     /// Whether this screen was presented on top of something, rather than as a tab.
     var isModal = true
@@ -44,31 +44,13 @@ struct ProfileView: View {
     @State private var isConfirmingRemoveAll = false
     @State private var didClearCache = false
     @State private var requestCount = 0
+    @State private var biometricsAvailable = false
 
-    /// Signs in, then clears the password from memory either way.
-    ///
-    /// The field is emptied on failure too: leaving a rejected password sitting in
-    /// a view's state is the kind of thing that ends up in a screenshot.
-    private func signIn(to account: any AuthenticatingSource) {
-        isSigningIn = true
-        signInError = nil
-        let username = email
-        let secret = password
-        password = ""
-        Task {
-            do {
-                try await SourceAuthenticator.shared.signIn(to: account, username: username, password: secret)
-                isSignedIn = true
-                signedInAs = username
-                // The playlists become feeds, so fetch them before the picker is
-                // next drawn rather than leaving the account looking empty.
-                await ContentClient.shared.refreshPlaylists(for: account.id)
-            } catch {
-                signInError = error.localizedDescription
-            }
-            isSigningIn = false
-        }
-    }
+    #if !os(tvOS)
+    @State private var isExporting = false
+    @State private var isImporting = false
+    @State private var importSummary: String?
+    #endif
 
     var body: some View {
         // @Bindable is the supported way to bind to an @Observable object held in
@@ -135,12 +117,14 @@ struct ProfileView: View {
                 // Stated plainly in both states: this is the one feature that sends
                 // anything about your browsing off the device.
                 Text(store.isEnabled ? """
-                    Titles and keywords are sent to Google Translate to be translated. Text \
-                    already in \(store.targetLanguageName) never leaves this device.
+                    Titles in languages already downloaded to this device are translated on \
+                    it — this app never downloads any. The rest are sent to Google Translate. \
+                    Text already in \(store.targetLanguageName) never leaves this device. \
+                    Keywords are search terms, so they stay as the site wrote them.
                     """ : """
-                    Off, so titles and keywords stay in whatever language they were uploaded \
-                    in. Turning this on sends them to Google Translate — the only part of this \
-                    app that shares what you’re browsing.
+                    Off, so titles stay in whatever language they were uploaded in. Turning \
+                    this on translates them on this device where its languages are already \
+                    downloaded, and through Google Translate otherwise.
                     """)
             }
 
@@ -164,13 +148,37 @@ struct ProfileView: View {
                     translator.clearCache()
                 }
                 .disabled(translator.translations.isEmpty)
+
+                #if !os(tvOS)
+                Button("Export Saved Videos") {
+                    isExporting = true
+                }
+                .disabled(saved.isEmpty)
+
+                Button("Import Saved Videos") {
+                    isImporting = true
+                }
+                #endif
             } header: {
                 Text("Storage")
             } footer: {
-                Text("Cached pages hold recently resolved video streams and posters.")
+                // Cached pages hold recently resolved video streams and posters.
+                // Export and import let a person move their library to a new device
+                // without needing iCloud.
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Cached pages hold recently resolved video streams and posters.")
+                    if let summary = importSummary {
+                        Text(summary)
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
 
             Section {
+                if biometricsAvailable {
+                    Toggle("Require Face ID", isOn: $lockRequiresBiometrics)
+                }
+
                 Button("Lock the App", role: .destructive) {
                     didConfirmAge = false
                 }
@@ -193,36 +201,23 @@ struct ProfileView: View {
                             }
                         }
                     } else {
-                        TextField("Email", text: $email)
-                            #if !os(macOS)
-                            .textContentType(.username)
-                            .keyboardType(.emailAddress)
-                            .textInputAutocapitalization(.never)
-                            #endif
-                        SecureField("Password", text: $password)
-                            #if !os(macOS)
-                            .textContentType(.password)
-                            #endif
-                        Button(isSigningIn ? "Signing In…" : "Sign In") {
-                            signIn(to: account)
-                        }
-                        .disabled(email.isEmpty || password.isEmpty || isSigningIn)
-                        if let signInError {
-                            Text(signInError)
-                                .font(.footnote)
-                                .foregroundStyle(.red)
-                        }
+                        #if os(tvOS)
+                        Text("Signing in needs a web browser, so it isn’t available here.")
+                            .foregroundStyle(.secondary)
+                        #else
+                        Button("Sign In") { isSigningIn = true }
+                        #endif
                     }
                 } header: {
                     Text("\(account.displayName) Account")
                 } footer: {
                     Text(isSignedIn ? """
-                        Your subscriptions and favorites appear as feeds in Browse. \
-                        Signing out forgets the password stored on this device.
+                        Your playlists and liked videos appear as feeds in Browse. \
+                        Signing out forgets the session kept on this device.
                         """ : """
-                        Optional. Signing in adds your subscriptions and favorites as feeds. \
-                        The password is kept in this device's keychain, sent only to \
-                        \(account.displayName), and never written to Diagnostics.
+                        Optional. Signing in adds your playlists and liked videos as feeds. \
+                        You sign in on \(account.displayName)'s own page, so this app never \
+                        sees your password — it keeps only the session that results.
                         """)
                 }
             }
@@ -260,14 +255,35 @@ struct ProfileView: View {
             }
         }
         .navigationTitle("Profile")
+        #if !os(tvOS)
+        // Presented from the list rather than from inside the section, so the sheet
+        // isn't torn down when the row it came from stops being drawn.
+        .sheet(isPresented: $isSigningIn) {
+            if let account = ContentSources.all.compactMap({ $0 as? any AuthenticatingSource }).first {
+                SignInWebView(source: account) { cookies in
+                    Task {
+                        await SourceAuthenticator.shared.adopt(cookies: cookies, for: account)
+                        isSignedIn = CredentialStore.hasSession(for: account.id)
+                        // The playlists are feeds, so fetch them before the picker is
+                        // next drawn rather than leaving the account looking empty.
+                        await ContentClient.shared.refreshPlaylists(for: account.id)
+                    }
+                }
+            }
+        }
+        #endif
+        .task {
+            // Check if biometric authentication is available on this device.
+            let context = LAContext()
+            biometricsAvailable = context.canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
+        }
         .task {
             requestCount = await RequestLog.shared.recent.count
             // A stored credential means signed in as far as this screen is
             // concerned; the session itself is restored lazily on first use.
-            if let account = ContentSources.all.compactMap({ $0 as? any AuthenticatingSource }).first,
-               let stored = CredentialStore.credential(for: account.id) {
-                isSignedIn = true
-                signedInAs = stored.username
+            if let account = ContentSources.all.compactMap({ $0 as? any AuthenticatingSource }).first {
+                isSignedIn = CredentialStore.hasSession(for: account.id)
+                signedInAs = CredentialStore.credential(for: account.id)?.username
             }
         }
         #if !os(tvOS)
@@ -294,6 +310,50 @@ struct ProfileView: View {
         } message: {
             Text("This clears \(saved.count) saved videos from this device. It can’t be undone.")
         }
+        #if !os(tvOS)
+        .fileExporter(
+            isPresented: $isExporting,
+            document: SavedExportDocument(saved: saved),
+            contentType: .json,
+            defaultFilename: "GetSome-Saved"
+        ) { _ in
+            // File written successfully.
+        }
+        .fileImporter(
+            isPresented: $isImporting,
+            allowedContentTypes: [.json],
+            onCompletion: { result in
+                switch result {
+                case .success(let url):
+                    // Security-scoped resources need access granted before reading.
+                    guard url.startAccessingSecurityScopedResource() else {
+                        importSummary = "Unable to access the file."
+                        return
+                    }
+                    defer { url.stopAccessingSecurityScopedResource() }
+
+                    do {
+                        let data = try Data(contentsOf: url)
+                        let videos = try SavedVideo.importVideos(from: data)
+                        // Only insert videos that aren’t already saved.
+                        var imported = 0
+                        for video in videos {
+                            if context.savedVideo(for: video.id) == nil {
+                                context.insert(SavedVideo(video: video))
+                                imported += 1
+                            }
+                        }
+                        try? context.save()
+                        importSummary = imported == 1 ? "Imported 1 video." : "Imported \(imported) videos."
+                    } catch {
+                        importSummary = "Failed to import: \(error.localizedDescription)"
+                    }
+                case .failure:
+                    importSummary = "Failed to select file."
+                }
+            }
+        )
+        #endif
     }
 
     private var header: some View {
@@ -317,6 +377,31 @@ struct ProfileView: View {
         }
     }
 }
+
+#if !os(tvOS)
+/// A FileDocument that wraps SavedVideo export data for the file exporter.
+private struct SavedExportDocument: FileDocument {
+    static let readableContentTypes: [UTType] = [.json]
+
+    var data: Data
+
+    init(saved: [SavedVideo]) {
+        // Encode the saved videos as JSON; this call should not throw in normal use.
+        self.data = (try? SavedVideo.exportData(saved)) ?? Data()
+    }
+
+    init(configuration: ReadConfiguration) throws {
+        guard let data = configuration.file.regularFileContents else {
+            throw NSError(domain: "SavedExportDocument", code: 1)
+        }
+        self.data = data
+    }
+
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+        FileWrapper(regularFileWithContents: data)
+    }
+}
+#endif
 
 extension View {
     /// Collapses a settings picker to one row showing the current value.

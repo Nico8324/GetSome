@@ -23,6 +23,12 @@ protocol AuthenticatingSource: ContentSource {
     /// Whether a page fetched after signing in shows a signed-in person.
     func isSignedIn(in html: String) -> Bool
 
+    /// Whether a sign-in answer is demanding a CAPTCHA.
+    ///
+    /// Worth its own answer: a challenge is neither a wrong password nor a broken
+    /// parser, and nothing the app does will get past one.
+    func demandsCaptcha(in html: String) -> Bool
+
     /// The site's own explanation for a refused sign-in, when it gives one.
     ///
     /// Returning `nil` means "not signed in, and the page said nothing about why",
@@ -32,6 +38,18 @@ protocol AuthenticatingSource: ContentSource {
 }
 
 extension AuthenticatingSource {
+    /// Looks for a challenge widget attached to the sign-in form itself.
+    ///
+    /// Deliberately narrow. Sign-up and password-reset forms carry their own CAPTCHA
+    /// on pages the app never posts to, so looking anywhere on the page would report
+    /// a challenge that isn't in the way.
+    func demandsCaptcha(in html: String) -> Bool {
+        guard let form = html.range(of: "id=\"signin-form\"") else { return false }
+        let scope = html[form.lowerBound...].prefix(20_000)
+        return scope.contains("frc-captcha") || scope.contains("g-recaptcha")
+            || scope.contains("h-captcha") || scope.contains("cf-turnstile")
+    }
+
     /// Looks for an error the site rendered next to its sign-in form.
     ///
     /// Deliberately generic: the exact markup can't be known without a failed
@@ -105,6 +123,13 @@ actor SourceAuthenticator {
         // site answers when it refuses, it answers with a page.
         guard html.count >= 2_000 else { throw CredentialError.unrecognizedResponse }
 
+        // Checked before the refusal branch: a challenge page also lacks a signed-in
+        // marker, so without this it reads as a wrong password and invites the person
+        // to retype a password that was never the problem.
+        if source.demandsCaptcha(in: html) {
+            throw CredentialError.captchaRequired(source.displayName)
+        }
+
         guard source.isSignedIn(in: html) else {
             // Whether the site *said* why separates "wrong password" from "this app
             // can no longer read the page". Without that split, both look identical
@@ -117,6 +142,40 @@ actor SourceAuthenticator {
         signedInSources.insert(source.id)
     }
 
+    /// Adopts a session a person established on the site's own page.
+    ///
+    /// This is how signing in works now: the app never posts the form and never
+    /// holds the password. Whatever the site asked for — a CAPTCHA, a device
+    /// confirmation — was asked of the person, in a web view, and what comes back
+    /// here is only the resulting cookies.
+    func adopt(cookies: [HTTPCookie], for source: any AuthenticatingSource) {
+        guard !cookies.isEmpty else { return }
+        for cookie in cookies {
+            session.configuration.httpCookieStorage?.setCookie(cookie)
+        }
+        CredentialStore.saveSession(cookies, for: source.id)
+        signedInSources.insert(source.id)
+    }
+
+    /// Puts a previously stored session back, so a launch costs no sign-in at all.
+    ///
+    /// Re-authenticating on every launch is what a site's risk scoring reads as
+    /// automation, and it is the reason this app started being asked for a CAPTCHA.
+    /// A session that survives a relaunch means signing in is rare.
+    private func restoreStoredSession(for source: any AuthenticatingSource) -> Bool {
+        // A cookie that has already expired can only re-serve the sign-in page,
+        // so it doesn't count as a session.
+        let cookies = CredentialStore.session(for: source.id).filter {
+            $0.expiresDate.map { $0 > .now } ?? true
+        }
+        guard !cookies.isEmpty else { return false }
+        for cookie in cookies {
+            session.configuration.httpCookieStorage?.setCookie(cookie)
+        }
+        signedInSources.insert(source.id)
+        return true
+    }
+
     /// Signs in again using a stored credential, if there is one.
     ///
     /// Sessions don't survive a relaunch, so this runs before the first request to
@@ -125,6 +184,9 @@ actor SourceAuthenticator {
     @discardableResult
     func restoreSession(for source: any AuthenticatingSource) async -> Bool {
         if signedInSources.contains(source.id) { return true }
+        // A stored session first: it costs no request, and asking the site to
+        // authenticate again is exactly what gets an account challenged.
+        if restoreStoredSession(for: source) { return true }
         // One sign-in at a time. Feeds load concurrently and each one asks for a
         // session, so without this a single screen fires several simultaneous
         // sign-ins at the same account — which the site refuses, leaving every feed
@@ -178,9 +240,12 @@ actor SourceAuthenticator {
 
         var (response, status) = try await fetchPage(pageRequest)
         if !source.isSignedIn(in: response.text) {
-            // The cookies didn't carry. Sessions don't survive a relaunch, and this
-            // is the request that discovers it.
+            // The session lapsed: the site answered with its sign-in page. The
+            // stored cookies are what just failed, so they go too — putting them
+            // back would only earn the same page again, forever, while the
+            // credential fallback below never got a turn.
             signedInSources.remove(source.id)
+            CredentialStore.removeSession(for: source.id)
             guard await restoreSession(for: source) else { throw CredentialError.rejected }
             (response, status) = try await fetchPage(pageRequest)
             guard source.isSignedIn(in: response.text) else { throw CredentialError.rejected }
@@ -198,6 +263,7 @@ actor SourceAuthenticator {
     func signOut(of source: any ContentSource) {
         signedInSources.remove(source.id)
         CredentialStore.remove(for: source.id)
+        CredentialStore.removeSession(for: source.id)
         if let cookies = session.configuration.httpCookieStorage?.cookies(for: source.homeURL) {
             for cookie in cookies { session.configuration.httpCookieStorage?.deleteCookie(cookie) }
         }

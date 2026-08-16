@@ -217,6 +217,33 @@ enum TitleFormatter {
             keywords.insert(contentsOf: parts.dropFirst().filter { !$0.isEmpty }, at: 0)
         }
 
+        // Strip any trailing run of unmistakably junk keywords. A fixed lexicon avoids
+        // the hard problem of distinguishing a tag from the last word of a real title;
+        // a wrong guess ruins a title, so only words we're certain are tags qualify.
+        let junkKeywords: Set<String> = [
+            "porn", "porno", "sex", "xxx", "teen", "milf", "anal", "amateur",
+            "hd", "4k", "av", "mp4", "video", "videos", "young", "hot",
+            "fuck", "fucking", "hardcore", "creampie", "blowjob", "asian",
+            "japanese", "uncensored", "full", "movie", "clip"
+        ]
+        let tokens = working.split(separator: " ", omittingEmptySubsequences: true).map(String.init)
+        var trailingJunkCount = 0
+        for token in tokens.reversed() {
+            let normalized = token.lowercased()
+                .trimmingCharacters(in: CharacterSet(charactersIn: ".,!?;:-–—\"'"))
+            if junkKeywords.contains(normalized) {
+                trailingJunkCount += 1
+            } else {
+                break
+            }
+        }
+        // Only strip if we found at least 2 junk tokens and at least 3 non-junk tokens remain.
+        if trailingJunkCount >= 2 && tokens.count - trailingJunkCount >= 3 {
+            let stripped = tokens.suffix(trailingJunkCount)
+            keywords.insert(contentsOf: stripped, at: 0)
+            working = tokens.dropLast(trailingJunkCount).joined(separator: " ")
+        }
+
         let title = working
             .trimmingCharacters(in: CharacterSet(charactersIn: " ,-–—|"))
             .trimmingCharacters(in: .whitespacesAndNewlines)

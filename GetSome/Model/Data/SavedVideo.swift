@@ -72,6 +72,28 @@ extension SavedVideo {
     }
 }
 
+extension SavedVideo {
+    /// Exports a collection of saved videos as a JSON-encoded array of Video objects.
+    ///
+    /// The resulting data encodes each SavedVideo's video reconstruction as a
+    /// pretty-printed JSON array, suitable for writing to a file for device migration.
+    static func exportData(_ saved: [SavedVideo]) throws -> Data {
+        let videos = saved.map { $0.video }
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        return try encoder.encode(videos)
+    }
+
+    /// Decodes a JSON-encoded array of Video objects.
+    ///
+    /// Recovers videos that were previously exported via exportData(_:), ready to
+    /// reconstruct as SavedVideo items and add to the library.
+    static func importVideos(from data: Data) throws -> [Video] {
+        let decoder = JSONDecoder()
+        return try decoder.decode([Video].self, from: data)
+    }
+}
+
 extension ModelContext {
     /// Returns the saved item for the specified video, if there is one.
     func savedVideo(for id: VideoID) -> SavedVideo? {
