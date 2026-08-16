@@ -29,6 +29,9 @@ enum TranslationServiceError: LocalizedError {
     case unreadableResponse
     case misalignedResponse(sent: Int, received: Int)
     case rateLimited
+    case unsupportedLanguage
+    case translatorBusy
+    case translatorUnavailable
 
     var errorDescription: String? {
         switch self {
@@ -42,6 +45,12 @@ enum TranslationServiceError: LocalizedError {
             String(localized: "The translation service returned \(received) results for \(sent) items.")
         case .rateLimited:
             String(localized: "The translation service is rate limiting this device. Try again later.")
+        case .unsupportedLanguage:
+            String(localized: "This device can’t translate that language.")
+        case .translatorBusy:
+            String(localized: "A translation is already running.")
+        case .translatorUnavailable:
+            String(localized: "Translation on this device didn’t answer.")
         }
     }
 }

@@ -7,11 +7,15 @@ The app's top level view.
 
 import SwiftUI
 import SwiftData
+#if canImport(Translation)
+import Translation
+#endif
 
 /// A view that presents the app's user interface.
 struct ContentView: View {
     @Environment(PlayerModel.self) private var player
     @Environment(\.modelContext) private var context
+    @Environment(\.scenePhase) private var scenePhase
     #if os(visionOS)
     @Environment(ImmersiveEnvironment.self) private var immersiveEnvironment
     #endif
@@ -19,12 +23,49 @@ struct ContentView: View {
     /// A Boolean value that indicates whether a person confirmed they're old enough to view the content.
     @AppStorage("didConfirmAge") private var didConfirmAge = false
 
+    /// Whether the user has opted to require biometric authentication.
+    @AppStorage("lockRequiresBiometrics") private var lockRequiresBiometrics = false
+
+    /// Whether the app is currently locked pending biometric authentication.
+    ///
+    /// The app is locked when it transitions to the background and biometric lock is enabled.
+    @State private var isLocked = true
+
     var body: some View {
         Group {
-            if didConfirmAge {
+            if didConfirmAge && lockRequiresBiometrics && isLocked {
+                // If biometric lock is enabled and engaged, show the lock screen instead
+                // of the library. The age gate flow remains untouched.
+                AppLockView {
+                    isLocked = false
+                }
+            } else if didConfirmAge {
                 library
             } else {
                 AgeGateView { didConfirmAge = true }
+            }
+        }
+        #if canImport(Translation)
+        // The bridge that makes on-device translation possible: the framework only
+        // vends sessions through this modifier, so SystemTranslator publishes the
+        // configuration it needs and receives its session here. See SystemTranslator.
+        .translationTask(SystemTranslator.shared.configuration) { session in
+            guard let batch = await SystemTranslator.shared.takeWork() else { return }
+            await SystemTranslator.finish(.init(session: session), batch: batch)
+        }
+        #endif
+        // The app switcher keeps a screenshot of the app. Display a privacy cover when
+        // the app is backgrounded, so the snapshot shows an opaque screen with nothing sensitive.
+        .overlay(alignment: .center) {
+            if scenePhase != .active {
+                Rectangle()
+                    .fill(.black)
+                    .overlay {
+                        Image(systemName: "eye.slash.fill")
+                            .font(.system(size: 44))
+                            .foregroundStyle(.secondary)
+                    }
+                    .ignoresSafeArea()
             }
         }
         // The player records watch history, but it's created before the model
@@ -42,6 +83,13 @@ struct ContentView: View {
                 for source in ContentSources.all where CredentialStore.hasCredential(for: source.id) {
                     await ContentClient.shared.refreshPlaylists(for: source.id)
                 }
+            }
+        }
+        // When the app transitions to the background and biometric lock is enabled,
+        // re-lock for the next foreground.
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .background && lockRequiresBiometrics {
+                isLocked = true
             }
         }
     }

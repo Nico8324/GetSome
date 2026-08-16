@@ -20,9 +20,10 @@ import SwiftUI
 /// Views ask for text through ``text(for:)``, which answers immediately with the
 /// original and swaps in a translation when one arrives.
 ///
-/// **This sends text off the device.** Titles and keywords go to a third-party
-/// service, which is why it stays off until switched on — see ``isEnabled``.
-/// Language detection is the one part that stays local, which also means text
+/// **Some text can leave the device.** The device's own translator answers most
+/// batches locally now, but a language it can't translate goes to a third-party
+/// service instead — which is why this stays off until switched on; see
+/// ``isEnabled``. Language detection always stays local, which also means text
 /// already in the device's language is never sent anywhere.
 @MainActor
 @Observable
@@ -89,12 +90,26 @@ final class TranslationStore {
     @ObservationIgnored private let service: any TranslationService
 
     init(targetLanguage: Locale.Language = Locale.current.language,
-         service: any TranslationService = GoogleTranslator()) {
+         service: (any TranslationService)? = nil) {
         self.targetLanguage = targetLanguage
-        self.service = service
+        self.service = service ?? Self.defaultService
         self.isEnabled = UserDefaults.standard.object(forKey: Self.isEnabledKey) as? Bool ?? false
         self.cache = TranslationCache(language: targetLanguage.minimalIdentifier)
         self.translations = cache.load()
+    }
+
+    /// The service translation goes through when the caller doesn't choose one.
+    ///
+    /// The device's own translator first, wherever the platform has one: it's
+    /// private, free, and works offline once a language is downloaded. Google
+    /// remains as the fallback for the languages the device can't translate —
+    /// which is now the only text that ever leaves the device.
+    private static var defaultService: any TranslationService {
+        #if canImport(Translation)
+        FallbackTranslator(primary: SystemTranslator.shared, fallback: GoogleTranslator())
+        #else
+        GoogleTranslator()
+        #endif
     }
 
     /// The name of the target language, for the profile screen.
