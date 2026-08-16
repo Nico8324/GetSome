@@ -68,7 +68,7 @@ struct CategoriesView: View {
                 ContentUnavailableView(
                     "No categories",
                     systemImage: "tag",
-                    description: Text("\(source?.displayName ?? "This site") doesn’t publish a category list.")
+                    description: Text("\(source?.displayName ?? String(localized: "This site")) doesn’t publish a category list.")
                 )
             } else if filtered.isEmpty && !query.isEmpty {
                 ContentUnavailableView.search(text: query)

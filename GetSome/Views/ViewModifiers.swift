@@ -88,6 +88,12 @@ private struct NavigationDestinationVideo: ViewModifier {
                         .toolbarRole(.editor)
                         #endif
 
+                case .keywords:
+                    KeywordsView(namespace: namespace)
+                        #if os(iOS)
+                        .toolbarRole(.editor)
+                        #endif
+
                 case .tag(let sourceID, let keyword):
                     SearchResultsView(sourceID: sourceID, query: keyword, namespace: namespace)
                         #if os(iOS)

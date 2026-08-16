@@ -44,6 +44,8 @@ enum VideoCardStyle {
 struct VideoCardView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(TranslationStore.self) private var translator
+    @Environment(PlayerModel.self) private var player
+    @Environment(\.modelContext) private var context
 
     private var isCompact: Bool {
         horizontalSizeClass == .compact
@@ -63,6 +65,49 @@ struct VideoCardView: View {
     }
 
     var body: some View {
+        #if os(tvOS)
+        card
+        #else
+        // A long press answers the question a card can't: "what is this,
+        // really?" — the site's own preview clip, plus the actions that
+        // otherwise cost a trip into the detail screen.
+        card.contextMenu {
+            Button {
+                player.loadVideo(video, presentation: .fullWindow)
+            } label: {
+                Label("Play", systemImage: "play.fill")
+            }
+            Button {
+                _ = context.toggleSaved(video)
+            } label: {
+                if context.savedVideo(for: video.id) != nil {
+                    Label("Remove from Saved", systemImage: "heart.slash")
+                } else {
+                    Label("Save", systemImage: "heart")
+                }
+            }
+            if let pageURL = ContentSources.source(with: video.sourceID)?.watchURL(forItem: video.itemID) {
+                ShareLink(item: pageURL) {
+                    Label("Share", systemImage: "square.and.arrow.up")
+                }
+            }
+        } preview: {
+            // The same clip the hero plays, at card size. The poster paints
+            // first, so a slow or expired preview still shows something.
+            PosterImageView(url: video.thumbnailURL, sourceID: video.sourceID)
+                .overlay {
+                    if let preview = video.previewURL {
+                        HeroPreviewView(url: preview, sourceID: video.sourceID)
+                    }
+                }
+                .aspectRatio(16 / 9, contentMode: .fit)
+                .frame(width: Constants.videoCardWidth)
+        }
+        #endif
+    }
+
+    @ViewBuilder
+    private var card: some View {
         switch style {
         case .half:
             PosterCard(poster: poster, title: translator.text(for: video.name))

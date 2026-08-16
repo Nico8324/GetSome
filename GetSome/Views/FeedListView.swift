@@ -29,13 +29,35 @@ struct FeedListView: View {
         isCompact ? Constants.compactVideoCardWidth : Constants.videoCardWidth
     }
 
+    /// The video whose poster stands in for each feed, keyed by feed.
+    ///
+    /// Picked left to right, skipping anything an earlier card already shows. Feeds
+    /// that overlap — and merged feeds overlap constantly, since the same video is
+    /// often both the most popular and the newest — otherwise drew the identical
+    /// poster twice in a row, which reads as a bug rather than as a coincidence.
+    private var covers: [Feed.ID: Video] {
+        var used = Set<URL>()
+        var result = [Feed.ID: Video]()
+        for feed in feedList {
+            let videos = feeds[feed].videos
+            let choice = videos.first { $0.thumbnailURL.map { !used.contains($0) } ?? false }
+                ?? videos.first
+            if let choice {
+                result[feed.id] = choice
+                if let url = choice.thumbnailURL { used.insert(url) }
+            }
+        }
+        return result
+    }
+
     var body: some View {
         Section {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(alignment: .top, spacing: Constants.cardSpacing) {
+                    let covers = covers
                     ForEach(feedList) { feed in
                         NavigationLink(value: NavigationNode.feed(feed.id)) {
-                            card(for: feed)
+                            card(for: feed, cover: covers[feed.id])
                             #if os(iOS) || os(visionOS)
                             .hoverEffect()
                             #endif
@@ -68,9 +90,9 @@ struct FeedListView: View {
     /// Both the poster and the title are given the same explicit width rather than
     /// being sized by their content. Left to infer it, the title ended up centred on
     /// a collapsed frame and rendered half off the card.
-    private func card(for feed: Feed) -> some View {
+    private func card(for feed: Feed, cover: Video?) -> some View {
         VStack(alignment: .leading, spacing: Constants.genreSpacing) {
-            poster(for: feed)
+            posterBody(for: feed, cover: cover)
                 .frame(width: cardWidth, height: cardWidth * 9 / 16)
                 .clipShape(.rect(cornerRadius: Constants.cornerRadius))
 
@@ -85,12 +107,14 @@ struct FeedListView: View {
         }
     }
 
-    private func poster(for feed: Feed) -> some View {
+    private func posterBody(for feed: Feed, cover: Video?) -> some View {
         // Both decorations go in overlays rather than a ZStack. A LinearGradient
         // has no size of its own, so in a stack it expands past the image and
         // becomes what drives the card's layout — which pushed the title off its
         // leading edge and made these cards taller than the video rows.
-        PosterImageView(url: feeds[feed].videos.first?.thumbnailURL, sourceID: feed.sourceID)
+        // The cover video's own site, not the feed's: a merged feed belongs to no
+        // single site, and the poster is fetched with that site's headers.
+        PosterImageView(url: cover?.thumbnailURL, sourceID: cover?.sourceID ?? feed.sourceID)
             .aspectRatio(16 / 9, contentMode: .fill)
             .overlay {
                 LinearGradient(

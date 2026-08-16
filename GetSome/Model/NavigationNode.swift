@@ -17,6 +17,8 @@ enum NavigationNode: Equatable, Hashable, Identifiable {
     case tag(sourceID: String, keyword: String)
     /// The list of categories a particular source publishes.
     case categories(sourceID: String)
+    /// The list of every keyword the app has seen so far.
+    case keywords
 
     var id: String {
         switch self {
@@ -24,6 +26,7 @@ enum NavigationNode: Equatable, Hashable, Identifiable {
         case .video(let id): "video-\(id.description)"
         case .tag(let sourceID, let keyword): "tag-\(sourceID)-\(keyword)"
         case .categories(let sourceID): "categories-\(sourceID)"
+        case .keywords: "keywords"
         }
     }
 }

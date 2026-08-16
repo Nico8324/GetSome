@@ -18,11 +18,22 @@ struct BrowseView: View {
     @Namespace private var namespace
 
     @State private var navigationPath = [NavigationNode]()
-    @State private var selectedSourceID = ContentSources.primary.id
-    @State private var selectedFeedID = ContentSources.primary.feeds[0].id
+    @State private var selectedSourceID = ContentSources.hasMultipleSources
+        ? ContentSources.allSitesID
+        : ContentSources.primary.id
+    @State private var selectedFeedID = ContentSources.mergedFeeds.first?.id
+        ?? ContentSources.primary.feeds[0].id
+
+    /// Whether the site picker is on the cross-site option rather than one site.
+    private var isBrowsingAllSites: Bool {
+        selectedSourceID == ContentSources.allSitesID
+    }
 
     private var availableFeeds: [Feed] {
-        ContentSources.source(with: selectedSourceID)?.feeds ?? []
+        if isBrowsingAllSites {
+            return ContentSources.mergedFeeds
+        }
+        return ContentSources.source(with: selectedSourceID)?.feeds ?? []
     }
 
     private var selectedFeed: Feed? {
@@ -72,6 +83,19 @@ struct BrowseView: View {
     private var sourcePicker: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack {
+                // First, and the one the screen opens on: the shelves elsewhere in
+                // the app are cross-site now, so arriving here at a single site
+                // would read as the app narrowing without being asked. Picking a
+                // site is still one tap away, which is what this screen is for.
+                Button("All Sites") {
+                    selectedSourceID = ContentSources.allSitesID
+                    if let first = ContentSources.mergedFeeds.first {
+                        selectedFeedID = first.id
+                        feeds.loadIfNeeded(first)
+                    }
+                }
+                .buttonStyle(PickerButtonStyle(isSelected: isBrowsingAllSites))
+
                 ForEach(ContentSources.all, id: \.id) { source in
                     Button(source.displayName) {
                         selectedSourceID = source.id
@@ -100,14 +124,21 @@ struct BrowseView: View {
                     .buttonStyle(PickerButtonStyle(isSelected: selectedFeedID == feed.id))
                 }
 
-                // Sits with the feeds because it's the same kind of choice, but
-                // carries an icon: it pushes a list rather than filtering in place.
+                // These sit with the feeds because they're the same kind of choice,
+                // but carry icons: they push a list rather than filtering in place.
                 if ContentSources.source(with: selectedSourceID)?.hasCategories == true {
                     NavigationLink(value: NavigationNode.categories(sourceID: selectedSourceID)) {
                         Label("Categories", systemImage: "tag")
                     }
                     .buttonStyle(PickerButtonStyle(isSelected: false))
                 }
+
+                // Not per-site, unlike categories: keywords are gathered from
+                // everything loaded, whichever site published them.
+                NavigationLink(value: NavigationNode.keywords) {
+                    Label("Keywords", systemImage: "number")
+                }
+                .buttonStyle(PickerButtonStyle(isSelected: false))
             }
         }
         .scrollClipDisabled()

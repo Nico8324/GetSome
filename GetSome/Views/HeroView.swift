@@ -23,6 +23,13 @@ struct HeroView: View {
         ZStack(alignment: .leading) {
             Group {
                 PosterImageView(url: video.thumbnailURL, sourceID: video.sourceID)
+                    .overlay {
+                        // The site's own hover clip, muted and looping — the poster
+                        // stays underneath as the first frame and the fallback.
+                        if let preview = video.previewURL {
+                            HeroPreviewView(url: preview, sourceID: video.sourceID)
+                        }
+                    }
                     .frame(maxHeight: Constants.heroViewHeight)
                     .clipped()
 

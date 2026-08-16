@@ -44,6 +44,15 @@ struct VideoListView: View {
     }
 
     var body: some View {
+        // An empty list renders nothing at all. Otherwise every section that is
+        // still loading — or whose feed failed — shows an orphan header over a
+        // blank row, and a screen of headers reads as broken rather than busy.
+        if !videos.isEmpty {
+            list
+        }
+    }
+
+    private var list: some View {
         Section {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(alignment: .top, spacing: Constants.cardSpacing) {

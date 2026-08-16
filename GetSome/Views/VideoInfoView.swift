@@ -19,7 +19,9 @@ struct InfoView: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            Text(video.subtitle)
+            // Views only. The poster's own badges already show duration and HD,
+            // so repeating them here said everything twice.
+            Text(video.formattedViews)
                 #if os(tvOS)
                 .font(.caption)
                 #else
@@ -42,9 +44,13 @@ struct InfoView: View {
 }
 
 /// A view that displays a list of keywords for a video.
+///
+/// Keywords are shown exactly as the site publishes them, never translated.
+/// They're search terms of art, not prose: out of context, machine translation
+/// turns "fishnet" into fishing equipment, and the site's own search only
+/// understands the original anyway — so a chip must say what tapping it asks for.
 struct TagView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    @Environment(TranslationStore.self) private var translator
 
     private var isCompact: Bool {
         horizontalSizeClass == .compact
@@ -55,7 +61,7 @@ struct TagView: View {
     var body: some View {
         HStack(spacing: Constants.genreSpacing) {
             ForEach(tags, id: \.self) { tag in
-                Text(translator.text(for: tag))
+                Text(tag)
                     .lineLimit(1)
                     .truncationMode(.tail)
                     .font(isCompact ? .caption2 : .caption)
