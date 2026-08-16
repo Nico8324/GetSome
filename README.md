@@ -42,8 +42,49 @@ pinning English, so titles and genre names usually arrive already translated —
 `MissAVSource.localePath`.
 
 Adding one is **a single file plus one line** in `ContentSources.all`. Nothing
-above that layer changes — the site picker, qualified feed names and per-source
+above that layer changes — the merged shelves, the site picker and per-source
 attribution all appear on their own.
+
+## One catalog
+
+The app presents these four as **one catalog**, not as four sites to choose
+between. Each site's listings are tagged with the `FeedKind` they *are* rather
+than the word that site uses — mat6tube's "Popular" and Pornhub's "Hot" are the
+same idea — and every kind becomes a single collection drawing from whichever
+sites publish it.
+
+```
+Popular ─┬─ mat6tube  /popular     page n ─┐
+         ├─ Pornhub   /video?o=ht  page n ─┼─ interleaved round-robin
+         ├─ XVideos   /            page n ─┤   primary site first
+         └─ MissAV    /            page n ─┘
+```
+
+`ContentClient` fetches page *n* from every member concurrently and interleaves the
+results, so a shelf reads as one collection rather than four catalogs end to end.
+A member that fails is dropped rather than emptying the shelf; the request fails
+only when every member did.
+
+A listing only one site publishes — MissAV's subtitled feeds, XVideos' Verified —
+is merged too, with a single member. That isn't a special case in the code: the
+card is named for its contents either way, and the day a second site adds the same
+listing it fills in with no further change.
+
+| | where the site is still visible |
+| :--- | :--- |
+| **Feed screen** | credits the sites actually behind it, and filters to one |
+| **Browse** | a site picker, for browsing one catalog deliberately |
+| **Cards** | each video's own site, in its detail screen |
+
+> [!NOTE]
+> Aggregating multiplies request volume by the number of sites — every shelf is a
+> fan-out. That is the reason for the snapshot and poster caches, and for the
+> energy rules in [CONTRIBUTING.md](CONTRIBUTING.md).
+
+**Not yet merged:** the same scene published on two sites appears twice, because
+nothing fingerprints content across them; ordering is positional fairness rather
+than ranking; and keyword search across sites is literal text, so a term only
+matches where that word is the site's own vocabulary.
 
 ## Architecture
 
@@ -54,10 +95,11 @@ flowchart TD
     end
     subgraph state [State]
         B["FeedStore<br/><i>paging, per-feed state</i>"]
+        S["FeedSnapshotStore<br/><i>page 1 on disk</i>"]
         T["TranslationStore<br/><i>translation of site text</i>"]
     end
     subgraph net [Networking]
-        C["ContentClient<br/><i>requests · caching · stream choice</i>"]
+        C["ContentClient<br/><i>requests · caching · stream choice<br/>cross-site merge</i>"]
         L["RequestLog<br/><i>diagnostics</i>"]
     end
     subgraph src [ContentSource protocol]
@@ -69,6 +111,7 @@ flowchart TD
 
     A --> B
     A --> T
+    B <--> S
     B --> C
     C --> L
     C --> D & E & F & G
@@ -92,12 +135,14 @@ GetSome/
 ├── Model/
 │   ├── Sources/          ContentSource, the registry, per-site implementations,
 │   │                     HTMLScanner and HLSManifest helpers
-│   ├── Networking/       ContentClient, RequestLog
-│   ├── Data/             Video, VideoID, SavedVideo
-│   ├── FeedStore         paging and per-feed state
+│   ├── Networking/       ContentClient, RequestLog, poster disk cache,
+│   │                     the system and fallback translators
+│   ├── Data/             Video, VideoID, SavedVideo, WatchedVideo
+│   ├── FeedStore         paging, per-feed state, merged fan-out
+│   ├── FeedSnapshotStore last page 1 of each feed, for an instant launch
 │   └── TranslationStore  translation of site text
-├── Views/                screens and cards
-├── Player/               PlayerModel and the platform player wrappers
+├── Views/                screens and cards, including Keywords
+├── Player/               PlayerModel, Up Next, the platform player wrappers
 └── SharePlay/            group watching
 ```
 
@@ -117,8 +162,11 @@ struct ExampleSource: ContentSource {
     let homeURL = URL(string: "https://example.com/")!
 
     var feeds: [Feed] {
-        [makeFeed("trending", name: "Trending", description: "…", icon: "flame"),
-         makeFeed("top", name: "Top", description: "…", icon: "crown", group: .chart)]
+        // `kind` is what merges this listing with the other sites' version of it.
+        [makeFeed("trending", name: "Trending", description: "…", icon: "flame",
+                  kind: .popular),
+         makeFeed("top", name: "Top", description: "…", icon: "crown",
+                  group: .chart, kind: .topRated)]
     }
 
     func listingURL(for feed: Feed, page: Int) -> URL? { … }
@@ -237,9 +285,20 @@ parsing — and `Mat6TubeSource` is the only file that needs fixing.
 
 <br>
 
-Sites publish titles and keywords in whatever language a video was uploaded in.
+Sites publish titles in whatever language a video was uploaded in.
 `TranslationStore` translates them into the device's language. It is **off until
-asked for**, because turning it on sends what you're browsing to a third party.
+asked for**, because turning it on can send what you're browsing to a third party.
+
+**On device first.** `SystemTranslator` handles any language already installed on
+the phone, and only what it can't handle goes to Google. It never triggers a
+download — a language pack the device doesn't already have is treated as
+unavailable rather than fetched, because storage spent per language is storage the
+person didn't ask to spend.
+
+**Titles only.** Keywords are deliberately *not* translated. They're search terms
+of art rather than prose: given a bare tag, machine translation turns "fishnet"
+into fishing equipment, and a chip has to say what tapping it will search for —
+which is the word the site published.
 
 - Views call `translator.text(for:)`, which answers immediately with the original
   and queues a miss. The queue is `@ObservationIgnored`, so queueing from inside a
@@ -269,8 +328,10 @@ start refusing without notice, so it sits behind a `TranslationService` protocol
 and swapping it is one new type. Rate limiting is treated as temporary — the batch
 goes back in the queue rather than being abandoned.
 
-Translated: titles, keywords on cards and detail pages, and keyword chips. A chip
-still *searches* with the original word, since a site only knows its own vocabulary.
+**The service is a fallback, not the path.** `FallbackTranslator` tries
+`SystemTranslator` first and only reaches for Google when the device can't do the
+work itself. Everything above — batching, alignment, persistence — applies to
+whichever one answers.
 
 </details>
 
@@ -287,9 +348,9 @@ no navigation bar to hold a button. There are no accounts.
 | :--- | :--- |
 | **Sites** | which source Watch Now leads with |
 | **Playback** | the resolution ceiling, read by `preferredStream(from:)` |
-| **Language** | translation on/off, downloads, status |
-| **Storage** | saved count, remove all, clear page and poster caches |
-| **Privacy** | lock the app, restoring the age gate |
+| **Language** | translation on/off, what stays on device, status |
+| **Storage** | saved count, export and import, remove all, clear caches |
+| **Privacy** | Face ID lock, and a cover over the app switcher |
 | **Diagnostics** | recent requests, and export the page a parser failed on |
 
 Saved videos live in SwiftData (`SavedVideo`), each holding its own copy of the

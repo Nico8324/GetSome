@@ -38,15 +38,20 @@ struct ExampleSource: ContentSource {
 
     var feeds: [Feed] {
         [
+            // `kind` is what makes a listing merge with the other sites' version
+            // of it. Name and icon come from the kind once merged, so they only
+            // show for a listing that has none.
             makeFeed("trending",
                      name: String(localized: "Trending", comment: "Collection name"),
                      description: String(localized: "…", comment: "…"),
-                     icon: "flame"),
+                     icon: "flame",
+                     kind: .popular),
             makeFeed("top",
                      name: String(localized: "Top", comment: "Collection name"),
                      description: String(localized: "…", comment: "…"),
                      icon: "crown",
-                     group: .chart)
+                     group: .chart,
+                     kind: .topRated)
         ]
     }
 
@@ -84,7 +89,26 @@ static let all: [any ContentSource] = [
 ]
 ```
 
-That's the whole integration. The interface adapts on its own: Browse and Search grow a site picker, feed names get qualified with their site, and the detail screen names where a video came from.
+That's the whole integration. The interface adapts on its own: the site joins every merged collection whose `FeedKind` it publishes, Browse and Search grow a site picker, and the detail screen names where a video came from.
+
+### Tagging listings with a kind
+
+The shelves are built from `FeedKind`, not from sites, so a listing's kind is what
+decides whether it joins an existing collection or becomes a new card of its own:
+
+| Your listing | Give it |
+| --- | --- |
+| A front page / what's hot | `.popular` |
+| Newest first | `.latest` |
+| Ranked over a day, week or month | `.topDay`, `.topWeek`, `.topMonth` |
+| Best rated | `.topRated` |
+| Something the app already knows | the matching case — check `FeedKind` first |
+| Something genuinely new | a new case, with a name, icon and group |
+| Something one-off and account-shaped | leave `kind` nil — it stays reachable in Browse |
+
+A kind with one member is normal and needs no special handling. Add a new case
+only when no existing one means the same thing: two cases for one idea is exactly
+the duplication the merge exists to remove.
 
 ## 3. What you get for free
 
@@ -102,6 +126,9 @@ Override any of these only if the site disagrees with the default:
 
 ## 4. Getting it right
 
+- **Give every listing a `kind` you can.** A listing left untagged never reaches the
+  shelves — it's only browsable per-site — which is right for an account feed and
+  wrong for a front page.
 - **`id` is permanent.** It's half of every `VideoID` and is stored with every saved video. Name the service, not the domain — domains move. If you must change it, put the old value in `previousIDs` and the registry keeps resolving it.
 - **Normalize item ids.** If the site links the same video as `/watch/abc`, `/watch/abc/`, and `/watch/abc?utm=x`, override `normalizedItemID(_:)` or it gets saved three times.
 - **Don't trust one page.** Parse a listing, a search result, and a watch page. Listing markup and related-video markup often differ — on mat6tube one uses `data-src` for the poster and the other uses `src`.
