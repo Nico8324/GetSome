@@ -105,7 +105,8 @@ final class TranslationStore {
     /// remains as the fallback for the languages the device can't translate —
     /// which is now the only text that ever leaves the device.
     private static var defaultService: any TranslationService {
-        #if canImport(Translation)
+        // Kept identical to the condition guarding SystemTranslator itself.
+        #if canImport(Translation) && (os(iOS) || os(macOS))
         FallbackTranslator(primary: SystemTranslator.shared, fallback: GoogleTranslator())
         #else
         GoogleTranslator()

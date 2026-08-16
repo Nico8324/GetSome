@@ -6,6 +6,10 @@ A full-screen biometric lock view that appears when the app comes to the foregro
 and the user has enabled biometric authentication.
 */
 
+// tvOS ships no LocalAuthentication framework — there's no biometric sensor on a
+// television — so the lock doesn't exist there at all. ContentView and ProfileView
+// check the same condition rather than referring to this type unconditionally.
+#if canImport(LocalAuthentication)
 import SwiftUI
 import LocalAuthentication
 
@@ -112,3 +116,5 @@ struct AppLockView: View {
         print("Unlocked")
     }
 }
+
+#endif

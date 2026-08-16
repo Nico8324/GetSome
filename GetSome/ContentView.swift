@@ -7,7 +7,8 @@ The app's top level view.
 
 import SwiftUI
 import SwiftData
-#if canImport(Translation)
+// The same condition the session bridge below uses; see SystemTranslator.
+#if canImport(Translation) && (os(iOS) || os(macOS))
 import Translation
 #endif
 
@@ -31,21 +32,39 @@ struct ContentView: View {
     /// The app is locked when it transitions to the background and biometric lock is enabled.
     @State private var isLocked = true
 
+    /// Whether the lock is currently standing between the person and the library.
+    ///
+    /// Always false where there's no biometric sensor to unlock it with — see
+    /// ``AppLockView``, which doesn't exist on those platforms.
+    private var isLockEngaged: Bool {
+        #if canImport(LocalAuthentication)
+        lockRequiresBiometrics && isLocked
+        #else
+        false
+        #endif
+    }
+
+    @ViewBuilder
+    private var lockScreen: some View {
+        #if canImport(LocalAuthentication)
+        AppLockView { isLocked = false }
+        #endif
+    }
+
     var body: some View {
         Group {
-            if didConfirmAge && lockRequiresBiometrics && isLocked {
+            if didConfirmAge && isLockEngaged {
                 // If biometric lock is enabled and engaged, show the lock screen instead
                 // of the library. The age gate flow remains untouched.
-                AppLockView {
-                    isLocked = false
-                }
+                lockScreen
             } else if didConfirmAge {
                 library
             } else {
                 AgeGateView { didConfirmAge = true }
             }
         }
-        #if canImport(Translation)
+        // Kept identical to the condition guarding SystemTranslator itself.
+        #if canImport(Translation) && (os(iOS) || os(macOS))
         // The bridge that makes on-device translation possible: the framework only
         // vends sessions through this modifier, so SystemTranslator publishes the
         // configuration it needs and receives its session here. See SystemTranslator.

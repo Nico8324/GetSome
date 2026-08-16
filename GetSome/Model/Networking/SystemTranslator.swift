@@ -5,7 +5,15 @@ Abstract:
 Translates site text on the device, using the system's translation models.
 */
 
-#if canImport(Translation)
+// An allowlist rather than a list of exclusions, because importing the framework
+// proves nothing: tvOS and visionOS both import Translation happily and then have
+// no TranslationSession to hand out. Where this is false the app falls back to the
+// network service, which works everywhere.
+//
+// Both call sites — the default service in TranslationStore and the session bridge
+// in ContentView — must spell this condition the same way. When they drifted apart,
+// only the visionOS build noticed, and only at the point of use.
+#if canImport(Translation) && (os(iOS) || os(macOS))
 import SwiftUI
 import Translation
 

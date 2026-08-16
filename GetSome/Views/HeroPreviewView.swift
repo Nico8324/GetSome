@@ -67,7 +67,12 @@ struct HeroPreviewView: View {
         item.preferredForwardBufferDuration = 5
         let player = AVPlayer(playerItem: item)
         player.isMuted = true
+        #if !os(visionOS)
+        // Silent scenery shouldn't hold the display awake. visionOS doesn't offer
+        // the property at all — it has no display to keep from sleeping in the
+        // sense the others mean.
         player.preventsDisplaySleepDuringVideoPlayback = false
+        #endif
         self.player = player
         player.play()
     }

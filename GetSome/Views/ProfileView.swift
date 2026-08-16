@@ -7,7 +7,9 @@ The profile and settings screen.
 
 import SwiftUI
 import SwiftData
+#if canImport(LocalAuthentication)
 import LocalAuthentication
+#endif
 import UniformTypeIdentifiers
 
 /// The profile and settings screen.
@@ -167,10 +169,14 @@ struct ProfileView: View {
                 // without needing iCloud.
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Cached pages hold recently resolved video streams and posters.")
+                    // Guarded to match the state it reads: tvOS has no document
+                    // picker, so it has neither the buttons nor their outcome.
+                    #if !os(tvOS)
                     if let summary = importSummary {
                         Text(summary)
                             .foregroundStyle(.secondary)
                     }
+                    #endif
                 }
             }
 
@@ -273,9 +279,12 @@ struct ProfileView: View {
         }
         #endif
         .task {
+            #if canImport(LocalAuthentication)
             // Check if biometric authentication is available on this device.
             let context = LAContext()
             biometricsAvailable = context.canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
+            #endif
+            // Left false where the framework doesn't exist, which hides the toggle.
         }
         .task {
             requestCount = await RequestLog.shared.recent.count
