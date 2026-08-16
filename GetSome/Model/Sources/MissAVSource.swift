@@ -29,50 +29,59 @@ struct MissAVSource: ContentSource {
                      name: String(localized: "Popular", comment: "Collection name"),
                      description: String(localized: "The front page, refreshed through the day.",
                                          comment: "The description of a collection of videos."),
-                     icon: "flame"),
+                     icon: "flame",
+                     kind: .popular),
             makeFeed("new",
                      name: String(localized: "Just Added", comment: "Collection name"),
                      description: String(localized: "The newest uploads, in the order they arrived.",
                                          comment: "The description of a collection of videos."),
-                     icon: "sparkles"),
+                     icon: "sparkles",
+                     kind: .latest),
             makeFeed("release",
                      name: String(localized: "New Releases", comment: "Collection name"),
                      description: String(localized: "Titles by their release date.",
                                          comment: "The description of a collection of videos."),
-                     icon: "calendar.badge.plus"),
+                     icon: "calendar.badge.plus",
+                     kind: .newReleases),
             makeFeed("uncensored-leak",
                      name: String(localized: "Uncensored", comment: "Collection name"),
                      description: String(localized: "Uncensored releases.",
                                          comment: "The description of a collection of videos."),
-                     icon: "eye"),
+                     icon: "eye",
+                     kind: .uncensored),
             makeFeed("english-subtitle",
                      name: String(localized: "English Subtitles", comment: "Collection name"),
                      description: String(localized: "Titles carrying English subtitles.",
                                          comment: "The description of a collection of videos."),
-                     icon: "captions.bubble"),
+                     icon: "captions.bubble",
+                     kind: .englishSubtitles),
             makeFeed("chinese-subtitle",
                      name: String(localized: "Chinese Subtitles", comment: "Collection name"),
                      description: String(localized: "Titles carrying Chinese subtitles.",
                                          comment: "The description of a collection of videos."),
-                     icon: "character.bubble"),
+                     icon: "character.bubble",
+                     kind: .chineseSubtitles),
             makeFeed("today-hot",
                      name: String(localized: "Most Viewed Today", comment: "Collection name"),
                      description: String(localized: "The most-watched videos of the past day.",
                                          comment: "The description of a collection of videos."),
                      icon: "calendar.badge.clock",
-                     group: .chart),
+                     group: .chart,
+                     kind: .topDay),
             makeFeed("weekly-hot",
                      name: String(localized: "Most Viewed This Week", comment: "Collection name"),
                      description: String(localized: "The most-watched videos of the past seven days.",
                                          comment: "The description of a collection of videos."),
                      icon: "calendar",
-                     group: .chart),
+                     group: .chart,
+                     kind: .topWeek),
             makeFeed("monthly-hot",
                      name: String(localized: "Most Viewed This Month", comment: "Collection name"),
                      description: String(localized: "The most-watched videos of the past month.",
                                          comment: "The description of a collection of videos."),
                      icon: "chart.line.uptrend.xyaxis",
-                     group: .chart)
+                     group: .chart,
+                     kind: .topMonth)
         ]
     }
 
@@ -212,7 +221,10 @@ struct MissAVSource: ContentSource {
             sourceID: id,
             itemID: code,
             rawTitle: HTMLScanner.decode(title),
-            thumbnailURL: Self.assetURL(code, file: "cover-t.jpg"),
+            // cover-n, not cover-t: the CDN keeps both for every title, and the
+            // "t" render is a genuine thumbnail — too small for a card, let alone
+            // the hero banner.
+            thumbnailURL: Self.assetURL(code, file: "cover-n.jpg"),
             previewURL: Self.assetURL(code, file: "preview.mp4"),
             duration: HTMLScanner.seconds(fromClock: duration)
         )
@@ -229,7 +241,8 @@ struct MissAVSource: ContentSource {
         return VideoDetails(
             sources: streams(inWatchPage: html),
             related: ((try? videos(inListing: response)) ?? []).filter { $0.itemID != itemID },
-            video: video(inWatchPage: html, itemID: itemID)
+            video: video(inWatchPage: html, itemID: itemID),
+            sceneThumbnailURLs: sceneThumbnailURLs(inWatchPage: html)
         )
     }
 
@@ -288,5 +301,55 @@ struct MissAVSource: ContentSource {
                 guard seen.insert(slug).inserted else { return nil }
                 return HTMLScanner.decode(slug.removingPercentEncoding ?? slug)
             }
+    }
+
+    /// Returns scene preview thumbnails for timeline scrubbing, if the watch page provides them.
+    ///
+    /// The page publishes seek-thumbnail URLs for timeline preview, sitting alongside
+    /// the playlist identifier in a JSON string with escaped separators. Individual
+    /// thumbnail URLs are extracted here; if only a single sprite sheet is found
+    /// rather than a sequence of scene images, an empty array is returned.
+    private func sceneThumbnailURLs(inWatchPage html: String) -> [URL] {
+        // Look for complete URLs containing surrit.com/<uuid>/... in the HTML, handling
+        // both escaped (/) and unescaped (\/) slashes from JSON context.
+        // The pattern captures URLs between quotes, which is where they appear in HTML.
+        let pattern = #"\"(https?:\\?\/\\?\/surrit\.com\\?\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\?\/[^\"\s\\]+)\""#
+        guard let expression = try? NSRegularExpression(pattern: pattern) else { return [] }
+
+        var urls: [URL] = []
+        var seen = Set<String>()
+
+        let matches = expression.matches(in: html, range: NSRange(html.startIndex..., in: html))
+        for match in matches {
+            guard let range = Range(match.range(at: 1), in: html) else { continue }
+            var urlString = String(html[range])
+
+            // Unescape forward slashes from JSON encoding
+            urlString = urlString.replacingOccurrences(of: "\\/", with: "/")
+
+            // Filter out likely sprite sheets or non-image URLs
+            if urlString.contains("vtt") || urlString.contains("sprite") {
+                continue
+            }
+
+            guard seen.insert(urlString).inserted,
+                  let url = URL(string: urlString) else { continue }
+
+            urls.append(url)
+        }
+
+        // If we found only one URL, it's likely a single sprite sheet rather than a
+        // sequence of scene images — skip it as instructed.
+        if urls.count <= 1 {
+            return []
+        }
+
+        // Sample evenly down to 12 if more are available, preserving chronological order
+        if urls.count > 12 {
+            let step = urls.count / 12
+            return stride(from: 0, to: urls.count, by: step).prefix(12).compactMap { urls[$0] }
+        }
+
+        return urls
     }
 }

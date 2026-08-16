@@ -29,17 +29,20 @@ struct XVideosSource: ContentSource {
                      name: String(localized: "Popular", comment: "Collection name"),
                      description: String(localized: "The front page, refreshed through the day.",
                                          comment: "The description of a collection of videos."),
-                     icon: "flame"),
+                     icon: "flame",
+                     kind: .popular),
             makeFeed("new",
                      name: String(localized: "Just Added", comment: "Collection name"),
                      description: String(localized: "The newest uploads, in the order they arrived.",
                                          comment: "The description of a collection of videos."),
-                     icon: "sparkles"),
+                     icon: "sparkles",
+                     kind: .latest),
             makeFeed("verified",
                      name: String(localized: "Verified", comment: "Collection name"),
                      description: String(localized: "Uploads from accounts the site has verified.",
                                          comment: "The description of a collection of videos."),
-                     icon: "checkmark.seal")
+                     icon: "checkmark.seal",
+                     kind: .verified)
         ]
     }
 
@@ -51,6 +54,13 @@ struct XVideosSource: ContentSource {
         if feed.group == .category {
             // Zero-based, like /verified.
             return homeURL.appending(path: "tags/\(feed.slug)/\(page - 1)")
+        }
+
+        if feed.slug.hasPrefix(Self.uploaderFeedPrefix) {
+            // Uploader feeds reference a channel/model/profile/pornstar by path.
+            // Their listings are one-based at `<path>/new/<page>`.
+            let channelPath = String(feed.slug.dropFirst(Self.uploaderFeedPrefix.count))
+            return homeURL.appending(path: "\(channelPath)/new/\(page)")
         }
 
         switch feed.slug {
@@ -255,10 +265,14 @@ struct XVideosSource: ContentSource {
         // so saving, history and playback all keep working without special cases.
         let resolved = HTMLScanner.firstMatch(of: #""eid"\s*:\s*"([^"]+)""#, in: html) ?? itemID
 
+        let (uploaderName, uploaderFeed) = uploaderFeedInfo(from: html)
+
         return VideoDetails(
             sources: streams,
             related: related(inWatchPage: html).filter { $0.itemID != resolved },
-            video: video(inWatchPage: html, streams: streams, itemID: resolved)
+            video: video(inWatchPage: html, streams: streams, itemID: resolved),
+            uploaderName: uploaderName,
+            uploaderFeed: uploaderFeed
         )
     }
 
@@ -365,6 +379,14 @@ struct XVideosSource: ContentSource {
         let duration = HTMLScanner.firstMatch(of: #"html5player\.setVideoFullDuration\((\d+)\)"#, in: html)
             ?? HTMLScanner.firstMatch(of: #"<meta property="og:duration" content="(\d+)""#, in: html)
 
+        // The watch page's own tag list. Listings carry no tags at all on this
+        // site, so without this an XVideos video only ever shows keywords its
+        // title happened to smuggle in.
+        let tags = HTMLScanner.allMatches(
+            of: #"<a href="/tags/[^"]*"[^>]*class="is-keyword[^"]*"[^>]*>([^<]+)<"#,
+            in: html
+        ).map(HTMLScanner.decode)
+
         return Video(
             sourceID: id,
             itemID: itemID,
@@ -372,8 +394,43 @@ struct XVideosSource: ContentSource {
             thumbnailURL: HTMLScanner.firstMatch(of: #"html5player\.setThumbUrl\('([^']+)'\)"#, in: html)
                 .flatMap { URL(string: $0) },
             duration: duration.flatMap(Int.init) ?? 0,
-            isHD: (streams.first?.height ?? 0) >= 720
+            isHD: (streams.first?.height ?? 0) >= 720,
+            tags: Array(tags.prefix(12))
         )
+    }
+
+    /// Extracts the uploader's name and a feed pointing to their channel, if available.
+    ///
+    /// The watch page publishes the uploader's display name in a player call, and a
+    /// link to their channel (under /channels, /models, /profiles, or /pornstars). When
+    /// both exist, builds a feed the same way playlists do — pointing at the channel's
+    /// `/new/<page>` listing.
+    private func uploaderFeedInfo(from html: String) -> (name: String?, feed: Feed?) {
+        let name = HTMLScanner.firstMatch(of: #"html5player\.setUploaderName\('([^']*)'\)"#, in: html)
+            .map { HTMLScanner.decode($0) }
+
+        let channelPath = [
+            HTMLScanner.firstMatch(of: #"<a[^>]+href="((?:/?channels|models|profiles|pornstars)/[^"]+)""#, in: html)
+        ].compactMap { $0 }.first
+
+        guard let name, let path = channelPath else {
+            return (name, nil)
+        }
+
+        // Extract just the path component without leading slash, e.g., "channels/someslug"
+        let normalized = path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+
+        // Build a feed slug encoding both the path type and the channel identifier.
+        // The slug will be decoded in listingURL to build the correct URL.
+        let feedSlug = Self.uploaderFeedPrefix + normalized
+        let feed = makeFeed(
+            feedSlug,
+            name: name,
+            description: String(localized: "Uploads by \(name)", comment: "An uploader's feed description"),
+            icon: "person.crop.square"
+        )
+
+        return (name, feed)
     }
 
     /// Converts a written duration such as `10 min` or `1 h 23 min` into seconds.
@@ -455,6 +512,9 @@ extension XVideosSource {
     /// The prefix that marks a feed as one of the account's playlists.
     static let playlistFeedPrefix = "pl:"
 
+    /// The prefix that marks a feed as videos from an uploader's channel.
+    static let uploaderFeedPrefix = "u:"
+
     /// The feeds that belong to a signed-in account.
     ///
     /// One per playlist, rather than a single "Favorites" that would have to guess
@@ -471,7 +531,8 @@ extension XVideosSource {
             name: String(localized: "Liked", comment: "Collection name"),
             description: String(localized: "The videos you marked as liked on this site.",
                                 comment: "The description of a collection of videos."),
-            icon: "hand.thumbsup"
+            icon: "hand.thumbsup",
+            kind: .liked
         )
         return [liked] + AccountPlaylistStore.playlists(for: id).map { playlist in
             makeFeed(
@@ -504,3 +565,4 @@ extension XVideosSource {
         return listing
     }
 }
+

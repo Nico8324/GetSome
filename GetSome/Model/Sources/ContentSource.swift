@@ -23,10 +23,117 @@ enum FeedGroup: String, Sendable, Hashable, CaseIterable {
     static let navigableGroups: [FeedGroup] = [.collection, .chart]
 }
 
+/// A listing that several sites publish their own version of.
+///
+/// Sites name the same idea differently — one calls its front page "Popular" and
+/// another calls it "Hot" — so a source tags its feed with the kind it is rather
+/// than the word it uses. Feeds sharing a kind are presented as one cross-site
+/// collection; see ``ContentSources/mergedFeeds``.
+/// Every listing the app presents is one of these, and a listing only one site
+/// publishes is a kind with one member rather than a card that names a site.
+enum FeedKind: String, Sendable, Hashable, CaseIterable {
+    case popular
+    case latest
+    case watchingNow
+    case explore
+    case verified
+    case newReleases
+    case uncensored
+    case englishSubtitles
+    case chineseSubtitles
+    case liked
+    case topDay
+    case topWeek
+    case topMonth
+    case topRated
+
+    /// The name of the merged collection, in presentation order.
+    var name: String {
+        switch self {
+        case .popular: String(localized: "Popular", comment: "Collection name")
+        case .latest: String(localized: "Just Added", comment: "Collection name")
+        case .watchingNow: String(localized: "Watching Now", comment: "Collection name")
+        case .explore: String(localized: "Explore", comment: "Collection name")
+        case .verified: String(localized: "Verified", comment: "Collection name")
+        case .newReleases: String(localized: "New Releases", comment: "Collection name")
+        case .uncensored: String(localized: "Uncensored", comment: "Collection name")
+        case .englishSubtitles: String(localized: "English Subtitles", comment: "Collection name")
+        case .chineseSubtitles: String(localized: "Chinese Subtitles", comment: "Collection name")
+        case .liked: String(localized: "Liked", comment: "Collection name")
+        case .topDay: String(localized: "Top Today", comment: "Collection name")
+        case .topWeek: String(localized: "Top This Week", comment: "Collection name")
+        case .topMonth: String(localized: "Top This Month", comment: "Collection name")
+        case .topRated: String(localized: "Top Rated", comment: "Collection name")
+        }
+    }
+
+    /// What the collection contains when it genuinely spans several sites.
+    ///
+    /// Nil for the kinds only one site publishes today: saying "across every site"
+    /// about a listing MissAV alone offers would be a claim the shelf doesn't meet.
+    /// Those fall back to the site's own wording — see ``ContentSources/mergedFeeds``.
+    var crossSiteDescription: String? {
+        switch self {
+        case .popular:
+            String(localized: "What's being watched right now, across every site.",
+                   comment: "The description of a collection of videos.")
+        case .latest:
+            String(localized: "The newest uploads from every site, side by side.",
+                   comment: "The description of a collection of videos.")
+        case .topDay:
+            String(localized: "The day's most-watched videos, across every site.",
+                   comment: "The description of a collection of videos.")
+        case .topWeek:
+            String(localized: "The week's most-watched videos, across every site.",
+                   comment: "The description of a collection of videos.")
+        case .topMonth:
+            String(localized: "The month's most-watched videos, across every site.",
+                   comment: "The description of a collection of videos.")
+        case .topRated:
+            String(localized: "The best-rated videos, across every site.",
+                   comment: "The description of a collection of videos.")
+        case .watchingNow, .explore, .verified, .newReleases,
+             .uncensored, .englishSubtitles, .chineseSubtitles, .liked:
+            nil
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .popular: "flame"
+        case .latest: "sparkles"
+        case .watchingNow: "eye"
+        case .explore: "shuffle"
+        case .verified: "checkmark.seal"
+        case .newReleases: "calendar.badge.plus"
+        case .uncensored: "eye.slash"
+        case .englishSubtitles: "captions.bubble"
+        case .chineseSubtitles: "character.bubble"
+        case .liked: "heart"
+        case .topDay: "sun.max"
+        case .topWeek: "calendar"
+        case .topMonth: "calendar.badge.clock"
+        case .topRated: "star"
+        }
+    }
+
+    var group: FeedGroup {
+        switch self {
+        case .popular, .latest, .watchingNow, .explore, .verified,
+             .newReleases, .uncensored, .englishSubtitles, .chineseSubtitles, .liked:
+            .collection
+        case .topDay, .topWeek, .topMonth, .topRated:
+            .chart
+        }
+    }
+}
+
 /// A single listing a source publishes, such as "most popular" or "added today".
 ///
 /// A feed belongs to exactly one source. Its ``slug`` is whatever that source
 /// needs to build a URL for it, so no other type has to know the site's routing.
+/// The exception is a merged feed, whose ``sourceID`` is ``ContentSources/allSitesID``
+/// and which stands for every site's version of one ``FeedKind`` at once.
 struct Feed: Identifiable, Hashable, Sendable {
     /// The identifier of the source that publishes this feed.
     let sourceID: String
@@ -37,6 +144,8 @@ struct Feed: Identifiable, Hashable, Sendable {
     /// An SF Symbol name.
     let icon: String
     let group: FeedGroup
+    /// The cross-site listing this one is a version of, when it is one.
+    let kind: FeedKind?
 
     var id: String { "\(sourceID)/\(slug)" }
 
@@ -46,7 +155,8 @@ struct Feed: Identifiable, Hashable, Sendable {
         name: String,
         description: String,
         icon: String,
-        group: FeedGroup = .collection
+        group: FeedGroup = .collection,
+        kind: FeedKind? = nil
     ) {
         self.sourceID = sourceID
         self.slug = slug
@@ -54,6 +164,7 @@ struct Feed: Identifiable, Hashable, Sendable {
         self.description = description
         self.icon = icon
         self.group = group
+        self.kind = kind
     }
 }
 
@@ -90,6 +201,12 @@ struct VideoDetails: Sendable {
     var related: [Video] = []
     /// Metadata the detail page publishes that a listing page doesn't.
     var video: Video?
+    /// The uploader's display name, when the source can identify them.
+    var uploaderName: String?
+    /// A feed of videos from the uploader, when available.
+    var uploaderFeed: Feed?
+    /// Scene preview thumbnails for timeline scrubbing, when available.
+    var sceneThumbnailURLs: [URL] = []
 }
 
 /// A site the app can browse.
@@ -306,9 +423,11 @@ extension ContentSource {
         name: String,
         description: String,
         icon: String,
-        group: FeedGroup = .collection
+        group: FeedGroup = .collection,
+        kind: FeedKind? = nil
     ) -> Feed {
-        Feed(sourceID: id, slug: slug, name: name, description: description, icon: icon, group: group)
+        Feed(sourceID: id, slug: slug, name: name, description: description,
+             icon: icon, group: group, kind: kind)
     }
 
     /// Returns this source's feed with the specified slug.

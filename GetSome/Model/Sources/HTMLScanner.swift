@@ -53,6 +53,19 @@ enum HTMLScanner {
         return String(text[captured])
     }
 
+    /// Returns every value the pattern's first capture group matches, in order.
+    static func allMatches(of pattern: String, in text: String) -> [String] {
+        guard let expression = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else {
+            return []
+        }
+        let range = NSRange(text.startIndex..., in: text)
+        return expression.matches(in: text, range: range).compactMap { match in
+            guard match.numberOfRanges > 1,
+                  let captured = Range(match.range(at: 1), in: text) else { return nil }
+            return String(text[captured])
+        }
+    }
+
     /// Returns the content of a `<meta>` tag with the specified attribute value.
     static func metaContent(_ name: String, in html: String) -> String? {
         let pattern = #"<meta[^>]+(?:property|name)="\#(NSRegularExpression.escapedPattern(for: name))"[^>]+content="([^"]*)""#

@@ -23,40 +23,47 @@ struct Mat6TubeSource: ContentSource {
                      name: String(localized: "Popular", comment: "Collection name"),
                      description: String(localized: "The videos everyone is watching right now, ranked by view count.",
                                          comment: "The description of a collection of videos."),
-                     icon: "flame"),
+                     icon: "flame",
+                     kind: .popular),
             makeFeed("recent",
                      name: String(localized: "Just Added", comment: "Collection name"),
                      description: String(localized: "The newest uploads, in the order they arrived.",
                                          comment: "The description of a collection of videos."),
-                     icon: "sparkles"),
+                     icon: "sparkles",
+                     kind: .latest),
             makeFeed("explore",
                      name: String(localized: "Explore", comment: "Collection name"),
                      description: String(localized: "A wider mix, pulled from across the catalog.",
                                          comment: "The description of a collection of videos."),
-                     icon: "shuffle"),
+                     icon: "shuffle",
+                     kind: .explore),
             makeFeed("now",
                      name: String(localized: "Watching Now", comment: "Collection name"),
                      description: String(localized: "What other people have open at this moment.",
                                          comment: "The description of a collection of videos."),
-                     icon: "eye"),
+                     icon: "eye",
+                     kind: .watchingNow),
             makeFeed("day",
                      name: String(localized: "Top Today", comment: "Collection name"),
                      description: String(localized: "The most-watched videos of the last twenty-four hours.",
                                          comment: "The description of a collection of videos."),
                      icon: "sun.max",
-                     group: .chart),
+                     group: .chart,
+                     kind: .topDay),
             makeFeed("week",
                      name: String(localized: "Top This Week", comment: "Collection name"),
                      description: String(localized: "The most-watched videos of the past seven days.",
                                          comment: "The description of a collection of videos."),
                      icon: "calendar",
-                     group: .chart),
+                     group: .chart,
+                     kind: .topWeek),
             makeFeed("month",
                      name: String(localized: "Top This Month", comment: "Collection name"),
                      description: String(localized: "The most-watched videos of the past month.",
                                          comment: "The description of a collection of videos."),
                      icon: "calendar.badge.clock",
-                     group: .chart)
+                     group: .chart,
+                     kind: .topMonth)
         ]
     }
 
@@ -146,8 +153,12 @@ struct Mat6TubeSource: ContentSource {
         guard let itemID = HTMLScanner.firstMatch(of: #"href="/watch/([^"]+)""#, in: card) else { return nil }
 
         // Listing pages defer the poster to `data-src`; related-video cards use `src`.
-        let thumbnail = HTMLScanner.firstMatch(of: #"data-src="(https?://[^"]+)""#, in: card)
-            ?? HTMLScanner.firstMatch(of: #"<img[^>]+src="(https?://[^"]+)""#, in: card)
+        // The CDN keeps a 800×450 render beside the 320×180 the listing embeds, and
+        // the difference is the whole hero banner: the small one upscaled reads as a
+        // broken app, not a small image.
+        let thumbnail = (HTMLScanner.firstMatch(of: #"data-src="(https?://[^"]+)""#, in: card)
+            ?? HTMLScanner.firstMatch(of: #"<img[^>]+src="(https?://[^"]+)""#, in: card))?
+            .replacingOccurrences(of: "preview_320.jpg", with: "preview_800.jpg")
 
         let title = HTMLScanner.firstMatch(of: #"class="title">([^<]*)<"#, in: card) ?? ""
         let alternateTitle = HTMLScanner.firstMatch(of: #"<img[^>]+alt="([^"]*)""#, in: card) ?? ""
