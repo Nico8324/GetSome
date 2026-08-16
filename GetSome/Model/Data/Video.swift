@@ -44,11 +44,24 @@ struct Video: Identifiable, Hashable, Sendable, Codable {
     /// The date the video was uploaded, when the app knows it.
     var uploadDate: Date?
 
+    /// The same video's identities on other sites, when it was found on more than one.
+    ///
+    /// Filled in when a merged feed collapses re-publications — see ``VideoMatcher``
+    /// — and deliberately absent from ``CodingKeys``: it describes one assembled
+    /// page rather than the video, and a copy of it kept in a snapshot would claim
+    /// a match that a later fetch might not make.
+    var alternateIDs: [VideoID] = []
+
     /// The identifier of the ``ContentSource`` this video came from.
     var sourceID: String { id.sourceID }
 
     /// The source's own identifier for the video.
     var itemID: String { id.itemID }
+
+    /// Everything persisted about a video. ``alternateIDs`` is absent on purpose.
+    private enum CodingKeys: String, CodingKey {
+        case id, rawTitle, thumbnailURL, previewURL, duration, views, isHD, tags, uploadDate
+    }
 
     init(
         id: VideoID,
@@ -217,21 +230,12 @@ enum TitleFormatter {
             keywords.insert(contentsOf: parts.dropFirst().filter { !$0.isEmpty }, at: 0)
         }
 
-        // Strip any trailing run of unmistakably junk keywords. A fixed lexicon avoids
-        // the hard problem of distinguishing a tag from the last word of a real title;
-        // a wrong guess ruins a title, so only words we're certain are tags qualify.
-        let junkKeywords: Set<String> = [
-            "porn", "porno", "sex", "xxx", "teen", "milf", "anal", "amateur",
-            "hd", "4k", "av", "mp4", "video", "videos", "young", "hot",
-            "fuck", "fucking", "hardcore", "creampie", "blowjob", "asian",
-            "japanese", "uncensored", "full", "movie", "clip"
-        ]
         let tokens = working.split(separator: " ", omittingEmptySubsequences: true).map(String.init)
         var trailingJunkCount = 0
         for token in tokens.reversed() {
             let normalized = token.lowercased()
                 .trimmingCharacters(in: CharacterSet(charactersIn: ".,!?;:-–—\"'"))
-            if junkKeywords.contains(normalized) {
+            if Self.junkKeywords.contains(normalized) {
                 trailingJunkCount += 1
             } else {
                 break
@@ -254,6 +258,19 @@ enum TitleFormatter {
         }
         return Split(title: title, keywords: Array(unique.prefix(12)))
     }
+
+    /// Words that are unmistakably tags rather than part of a title.
+    ///
+    /// A fixed lexicon avoids the hard problem of telling a tag from the last word
+    /// of a real title; a wrong guess ruins a title, so only words we're certain
+    /// about qualify. ``VideoMatcher`` reads the same list: a word that carries no
+    /// meaning at the end of a title carries none in the middle either.
+    static let junkKeywords: Set<String> = [
+        "porn", "porno", "sex", "xxx", "teen", "milf", "anal", "amateur",
+        "hd", "4k", "av", "mp4", "video", "videos", "young", "hot",
+        "fuck", "fucking", "hardcore", "creampie", "blowjob", "asian",
+        "japanese", "uncensored", "full", "movie", "clip"
+    ]
 
     /// Whether a string is short enough to read as a tag rather than a sentence.
     ///

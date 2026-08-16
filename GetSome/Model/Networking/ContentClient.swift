@@ -156,19 +156,42 @@ actor ContentClient {
             }
         }
 
-        // Round-robin, so the shelf reads as one collection rather than four sites
-        // laid end to end. Members arrive with the person's chosen site first, which
-        // makes it the one they see without scrolling.
-        var interleaved = [Video]()
+        let interleaved = Self.interleaved(pages)
+        if interleaved.isEmpty, let firstError { throw firstError }
+        // Sites republish each other, so the same scene arrives two or three times
+        // under different titles. Collapsed after interleaving, not before, so the
+        // copy that survives is the one from the site that leads the order.
+        let merged = VideoMatcher.deduplicated(interleaved)
+        note(merged, collapsedFrom: interleaved.count, in: feed.name)
+        return merged
+    }
+
+    /// Records what a page's deduplication did, to the debug log.
+    ///
+    /// A merge that shouldn't have happened is invisible in the interface — the
+    /// video it hid simply isn't there — so the pairs are worth being able to read
+    /// back. Debug level: this is a developer's question, not a diagnostics report.
+    private func note(_ merged: [Video], collapsedFrom count: Int, in feedName: String) {
+        guard merged.count < count else { return }
+        logger.debug("\(feedName, privacy: .public): \(count - merged.count) copies collapsed")
+        for video in merged where !video.alternateIDs.isEmpty {
+            let others = video.alternateIDs.map(\.sourceID).joined(separator: ", ")
+            logger.debug("  ⇄ \(video.name) [\(video.sourceID) + \(others)] \(video.duration)s")
+        }
+    }
+
+    /// Round-robin, so a gathered page reads as one list rather than several laid
+    /// end to end. Callers pass their sources in preference order, which becomes
+    /// what a person sees without scrolling.
+    private static func interleaved(_ pages: [[Video]]) -> [Video] {
+        var result = [Video]()
         let longest = pages.map(\.count).max() ?? 0
         for position in 0..<longest {
             for videos in pages where position < videos.count {
-                interleaved.append(videos[position])
+                result.append(videos[position])
             }
         }
-
-        if interleaved.isEmpty, let firstError { throw firstError }
-        return interleaved
+        return result
     }
 
     /// Loads a page of videos that match the specified text.
@@ -223,16 +246,9 @@ actor ContentClient {
             }
         }
 
-        var interleaved = [Video]()
-        let longest = pages.map(\.count).max() ?? 0
-        for position in 0..<longest {
-            for videos in pages where position < videos.count {
-                interleaved.append(videos[position])
-            }
-        }
-
+        let interleaved = Self.interleaved(pages)
         if interleaved.isEmpty, let firstError { throw firstError }
-        return interleaved
+        return VideoMatcher.deduplicated(interleaved)
     }
 
     /// The most ids to resolve for one page of a listing that publishes ids alone.
@@ -472,6 +488,7 @@ actor ContentClient {
         from source: any ContentSource,
         intent: String
     ) async throws -> SourceResponse {
+        try await pace(source)
         let request = source.request(for: url)
 
         // Only coalesce GET requests with no body.
@@ -499,6 +516,50 @@ actor ContentClient {
             // Non-GET requests bypass coalescing.
             return try await performFetch(url, from: source, intent: intent)
         }
+    }
+
+    /// The last time a request went to each site, and how long to leave it alone.
+    private var lastRequest = [String: Date]()
+    private var cooldownUntil = [String: Date]()
+
+    /// The gap to leave between two requests to the same site.
+    ///
+    /// Aggregating changed the shape of this app's traffic. Browsing one site meant
+    /// one request per screen; a merged shelf means one *per site*, and several
+    /// shelves load at once — so each site now sees a burst where it used to see a
+    /// trickle. Sites read bursts as robots, and at least one has started answering
+    /// with a challenge page. Spacing requests is both the polite behaviour and the
+    /// self-interested one: a site that blocks the app is a site the app can't read.
+    private static let minimumInterval: TimeInterval = 0.35
+
+    /// How long to leave a site alone once it has refused.
+    private static let cooldown: TimeInterval = 120
+
+    /// Waits out this site's spacing, and refuses outright while it's cooling down.
+    private func pace(_ source: any ContentSource) async throws {
+        if let until = cooldownUntil[source.id] {
+            if until > .now {
+                // Failing here rather than asking is the point of a cooldown: a site
+                // that just refused will refuse again, and each attempt makes the
+                // refusal last longer.
+                throw ContentError.blocked(source.displayName)
+            }
+            cooldownUntil[source.id] = nil
+        }
+
+        if let last = lastRequest[source.id] {
+            let due = last.addingTimeInterval(Self.minimumInterval)
+            if due > .now {
+                try? await Task.sleep(for: .seconds(due.timeIntervalSinceNow))
+            }
+        }
+        lastRequest[source.id] = .now
+    }
+
+    /// Marks a site as refusing, so the app stops asking for a while.
+    private func beginCooldown(for source: any ContentSource, status: Int) {
+        cooldownUntil[source.id] = Date().addingTimeInterval(Self.cooldown)
+        logger.error("\(source.id, privacy: .public) answered \(status) — resting it for \(Int(Self.cooldown))s")
     }
 
     /// Performs a fetch with retry for transient failures.
@@ -574,6 +635,13 @@ actor ContentClient {
 
         if let status, !(200..<300).contains(status) {
             logger.error("Request for \(url.absoluteString, privacy: .public) failed: \(status)")
+            // A refusal is about the site, not this request: 403 is a challenge
+            // page or a block, 429 is being told to slow down. Either way the next
+            // nine requests of a fan-out would get the same answer and dig the hole
+            // deeper, so the site gets rested instead.
+            if status == 403 || status == 429 {
+                beginCooldown(for: source, status: status)
+            }
             await RequestLog.shared.record(
                 RequestRecord(sourceID: source.id, intent: intent, url: url, statusCode: status,
                               byteCount: data.count, parsedCount: nil,

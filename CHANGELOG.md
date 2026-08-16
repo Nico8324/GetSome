@@ -4,6 +4,19 @@ Notable changes, newest first. Versions follow [semantic versioning](https://sem
 though there is no distribution path — a tag marks a state worth returning to
 rather than a shipped build.
 
+## Unreleased
+
+- **The same video published on two sites is recognized and shown once**, with the
+  copies remembered rather than discarded: playback falls back to another site when
+  one has pulled a video or blocked the region. Matching requires agreement on
+  running time and never fires on a title alone — a wrong match hides a video
+  invisibly, which is the one failure worth being conservative about.
+  `Tools/MatcherCheck/run.sh` checks it against known pairs without building the app.
+- **Requests to a site are spaced, and a site that refuses is rested.** Aggregating
+  turned a trickle of requests into a burst per site, which is what bot defences
+  look for. A `403` or `429` now stops the rest of the fan-out asking too.
+- A detail screen says when a video was found on more than one site.
+
 ## 1.0.0
 
 The first tagged release, and the one where the app stopped being a browser for

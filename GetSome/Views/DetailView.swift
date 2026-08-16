@@ -224,9 +224,15 @@ struct DetailView: View {
         // Maximum Quality setting.
         let quality = playbackHeight.map { "\($0)p" } ?? (video.isHD ? "HD" : "")
         var parts = [video.formattedDuration, video.formattedViews, video.formattedUploadDate, quality]
-        // Name the site only when the app browses more than one.
+        // Name the site only when the app browses more than one, and say when the
+        // video was found on several — a merged feed shows one card for all of
+        // them, so without this the other copies are invisible.
         if ContentSources.hasMultipleSources, let source = video.source {
-            parts.append(source.displayName)
+            let others = video.alternateIDs.count
+            parts.append(others > 0
+                ? String(localized: "\(source.displayName) +\(others)",
+                         comment: "A site name, and how many other sites also publish the video")
+                : source.displayName)
         }
         return parts.filter { !$0.isEmpty }.joined(separator: " | ")
     }

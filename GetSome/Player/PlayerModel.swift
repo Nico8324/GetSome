@@ -356,7 +356,7 @@ enum Presentation {
             currentHeight = nil
         } else {
             do {
-                let stream = try await client.stream(for: video)
+                let stream = try await resolveStream(for: video)
                 url = stream.url
                 currentHeight = stream.height > 0 ? stream.height : nil
             } catch {
@@ -400,6 +400,30 @@ enum Presentation {
 
         if autoplay {
             player.play()
+        }
+    }
+
+    /// Resolves a stream, falling back to the same video on another site.
+    ///
+    /// This is what deduplication buys. A merged feed knows that one scene exists on
+    /// several sites — see ``VideoMatcher`` — so a site that has pulled the video,
+    /// blocked the region, or simply broken is no longer the end of the attempt: the
+    /// app asks the next site holding the same video. Only the site changes; what
+    /// plays is what was tapped.
+    ///
+    /// The original error is what surfaces if every copy fails, since that's the one
+    /// about the video the person actually chose.
+    private func resolveStream(for video: Video) async throws -> StreamSource {
+        do {
+            return try await client.stream(for: video)
+        } catch {
+            for alternate in video.alternateIDs {
+                guard !Task.isCancelled else { throw error }
+                guard let stream = try? await client.stream(for: Video(id: alternate)) else { continue }
+                logger.debug("↩︎ \(video.id) unavailable, playing the copy on \(alternate.sourceID)")
+                return stream
+            }
+            throw error
         }
     }
 

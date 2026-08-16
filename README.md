@@ -81,10 +81,50 @@ listing it fills in with no further change.
 > fan-out. That is the reason for the snapshot and poster caches, and for the
 > energy rules in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-**Not yet merged:** the same scene published on two sites appears twice, because
-nothing fingerprints content across them; ordering is positional fairness rather
-than ranking; and keyword search across sites is literal text, so a term only
-matches where that word is the site's own vocabulary.
+### Recognizing the same video twice
+
+Sites republish each other, so a gathered page arrives holding one scene two or
+three times under titles nobody wrote the same way. Nothing links those copies —
+each site issues its own identifier — so `VideoMatcher` compares what every
+listing does publish: a title and a running time.
+
+| Signal | How it's used |
+| :--- | :--- |
+| **Running time** | required, always. A few seconds' tolerance, more on a long film |
+| **Studio code** | `MXGS-1440` and `mxgs1440` are one code, and settle it outright |
+| **Title words** | junk and stopwords dropped, then compared by Sørensen–Dice |
+| **Same site** | never compared — a site's own listing is authoritative |
+
+The two mistakes are not equally bad. A missed duplicate leaves a feed as it is;
+a **wrong** match hides a video and says nothing about it. So a title alone never
+matches, running times must agree, and a caption made only of tag words — which
+sites produce constantly — is treated as carrying no information at all.
+
+The copy that survives is the one from the site leading the order, and it takes
+whatever the others knew that it didn't. It also remembers their identities, which
+is what lets playback fall back: a site that has pulled a video, blocked the
+region or simply broken is answered by asking the next site holding the same one.
+
+> [!TIP]
+> `Tools/MatcherCheck/run.sh` checks the matcher against known pairs without
+> building the app — useful precisely when the live sites can't verify anything,
+> which is most of the time two of them are blocked.
+
+**Still not merged:** ordering is positional fairness rather than ranking, and
+keyword search across sites is literal text, so a term only matches where that
+word is the site's own vocabulary.
+
+### Being a polite client
+
+Aggregating changed the shape of this app's traffic: browsing one site meant one
+request per screen, while a merged shelf means one *per site*, several shelves at
+a time. Sites read bursts as robots. Requests to a single site are spaced, and a
+site answering `403` or `429` is rested for two minutes rather than being asked
+nine more times by the rest of the fan-out.
+
+> [!NOTE]
+> **A challenge page is where this app stops.** When a site answers with one, the
+> app reports the site as refusing and waits. It does not attempt to solve it.
 
 ## Architecture
 

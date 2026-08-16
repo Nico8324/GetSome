@@ -4,6 +4,71 @@
     "" : {
       "shouldTranslate" : false
     },
+    "%@ +%lld" : {
+      "comment" : "A site name, and how many other sites also publish the video",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ +%lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ +%lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ +%lld"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ +%lld"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ +%lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ +%lld"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ +%lld"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ +%lld"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ +%lld"
+          }
+        },
+        "zh_CN" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ +%lld"
+          }
+        }
+      }
+    },
     "%@ Account" : {
       "localizations" : {
         "de" : {
@@ -325,6 +390,71 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ 要求先完成 CAPTCHA 验证才接受登录。此 App 无法完成验证——请在浏览器中登录该网站，然后重试。"
+          }
+        }
+      }
+    },
+    "%@ is refusing requests from this app at the moment. It will be tried again shortly." : {
+      "comment" : "An error shown when a site has started refusing requests",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ weigert sich momentan, Anfragen von dieser App zu akzeptieren. Es wird bald erneut versucht."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ está rechazando las solicitudes de esta app en este momento. Se volverá a intentar en breve."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ refuse actuellement les demandes de cette app. Une nouvelle tentative sera effectuée bientôt."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ इस समय इस ऐप से अनुरोधों को अस्वीकार कर रहा है। इसे शीघ्र ही फिर से आजमाया जाएगा।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ sta rifiutando le richieste di questa app al momento. Verrà riprovato tra breve."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ は現在このアプリからのリクエストを拒否しています。間もなく再度試行されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@이(가) 현재 이 앱의 요청을 거부하고 있습니다. 곧 다시 시도됩니다."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ está recusando solicitações deste app no momento. Será tentado novamente em breve."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ сейчас отказывает в запросах от этого приложения. Попытка будет повторена вскоре."
+          }
+        },
+        "zh_CN" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 目前拒绝来自此应用的请求。将在稍后再次尝试。"
           }
         }
       }
